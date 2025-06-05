@@ -1,0 +1,9 @@
+# Ignorer l'environnement virtuel
+venv/
+
+# Ignorer les fichiers compilés
+__pycache__/
+*.pyc
+
+# Fichiers parasites
+=2.0
