@@ -58,13 +58,17 @@ class Player(pygame.sprite.Sprite):
         if self.vel_y > self.terminal_velocity:
             self.vel_y = self.terminal_velocity
 
-    def update(self):
+    def update(self, platforms):
         self.handle_input()
         self.apply_gravity()
 
-        # Mise à jour de la position
+        # deplacement horizontal + collisions
         self.rect.x += self.vel_x
+        self.check_collisions(platforms, "horizontal")
+
+        #deplacement vertical + collisions
         self.rect.y += self.vel_y
+        self.check_collisions(platforms, "vertical")
 
         #Choisir le sprite selon l'état
         if not self.on_ground:
@@ -78,16 +82,26 @@ class Player(pygame.sprite.Sprite):
         if self.direction == "left":
             self.image = pygame.transform.flip(self.image, True, False)
 
-        # TEMP : collision avec le sol
-        if self.rect.bottom >= 500:
-            self.rect.bottom = 500
-            self.vel_y = 0
-            self.on_ground = True
-        else:
-            self.on_ground = False
+       
+    
+    def check_collisions(self, platforms, direction):
+        for plateform in platforms:
+            if hasattr(plateform, 'is_solid') and not plateform.is_solid:
+                continue
 
-        # Limiter le déplacement à l'écran
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > 1200:  # largeur de l'écran
-            self.rect.right = 1200
+            if self.rect.colliderect(plateform.rect):
+                if direction == "horizontal":
+                    if self.vel_x > 0:             #deplacement vers la droite
+                        self.rect.right = plateform.rect.left
+                    elif self.vel_x < 0: # gauche
+                        self.rect.left = plateform.rect.right
+                elif direction == "vertical":
+                    if self.vel_y > 0 : #chute
+                        self.rect.bottom = plateform.rect.top
+                        self.vel_y = 0
+                        self.on_ground = True
+                    elif self.vel_y < 0 : #saut
+                        self.rect.top = plateform.rect.bottom
+                        self.vel_y = 0
+        if direction ==  "vertical" and self.vel_y != 0:
+            self.on_ground = False
