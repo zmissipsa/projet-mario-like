@@ -1,14 +1,26 @@
 # player.py
 
 import pygame
+from sprites import Spritesheet
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
         # Pour commencer, un simple carré rouge
-        self.image = pygame.Surface((50, 50))
-        self.image.fill((255, 0, 0))
+        spritesheet = Spritesheet("./assets/images/characters.gif")
+        
+        self.sprites ={
+            "idle": pygame.transform.scale(spritesheet.get_image(256, 0, 20, 35), (48, 48)),
+            "walk": pygame.transform.scale(spritesheet.get_image(256, 0, 20, 35), (48, 48)),
+            "jump": pygame.transform.scale(spritesheet.get_image(368, 0, 20, 35), (48, 48)),
+        }
+        
+        self.image = self.sprites["idle"]
+        
+        
+        #self.image = pygame.Surface((50, 50))
+        #self.image.fill((255, 0, 0))
 
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
@@ -54,6 +66,18 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.vel_x
         self.rect.y += self.vel_y
 
+        #Choisir le sprite selon l'état
+        if not self.on_ground:
+            self.image = self.sprites["jump"]
+        elif self.vel_x!= 0:
+            self.image = self.sprites["walk"]
+        else:
+            self.image = self.sprites["idle"]
+        
+        # Inverser l'image si vers la gauche
+        if self.direction == "left":
+            self.image = pygame.transform.flip(self.image, True, False)
+
         # TEMP : collision avec le sol
         if self.rect.bottom >= 500:
             self.rect.bottom = 500
@@ -65,5 +89,5 @@ class Player(pygame.sprite.Sprite):
         # Limiter le déplacement à l'écran
         if self.rect.left < 0:
             self.rect.left = 0
-        if self.rect.right > 800:  # largeur de l'écran
-            self.rect.right = 800
+        if self.rect.right > 1200:  # largeur de l'écran
+            self.rect.right = 1200
