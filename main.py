@@ -3,6 +3,8 @@
 import pygame
 from player import Player
 from level import Level
+from sprites import Brick, Coin, Spritesheet
+
 
 pygame.init()
 screen = pygame.display.set_mode((1200, 600))
@@ -11,10 +13,19 @@ clock = pygame.time.Clock()
 
 level = Level("niveau1.txt", "tiles.xcf")
 
-# Créer le player
+# Creer le player
 player = Player(100, 100)
 #player_group = pygame.sprite.Group()
 #player_group.add(player)
+
+spritesheet = Spritesheet("assets/images/tiles.xcf")
+
+bricks = pygame.sprite.Group()
+brick1 = Brick(300, 250, spritesheet, breakable=True)
+brick2 = Brick(900, 350, spritesheet, breakable=True)
+bricks.add(brick1, brick2)
+
+coins = pygame.sprite.Group()
 
 running = True
 while running:
@@ -25,8 +36,19 @@ while running:
             running = False
 
     # Update
+
     plateforms = level.get_platforms()
     player.update(plateforms)
+
+    bricks.update()
+    coins.update()
+
+    for brick in bricks:
+     if brick.rect.colliderect(player.rect):  # ou une détection précise du saut
+        coin = brick.break_brick()
+        if coin:
+            coins.add(coin)
+
 
 
     # Affichage
@@ -34,6 +56,9 @@ while running:
 
     level.draw(screen)                      # Dessin des plateforms
     screen.blit(player.image, player.rect)   # Dessin du joueur
+    bricks.draw(screen)
+    coins.draw(screen)
+
 
     pygame.display.flip()
 

@@ -3,11 +3,12 @@ import os
 from sprites import Spritesheet
 
 class Platform(pygame.sprite.Sprite):
-    def __init__(self, x, y, sprite):
+    def __init__(self, x, y, sprite, p_type="ground", is_solid=True):
         super().__init__()
-        self.image = sprite
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x,y)
+        self.image     = sprite
+        self.rect      = self.image.get_rect(topleft=(x, y))
+        self.type      = p_type      
+        self.is_solid  = is_solid    
 
 class Level:
     def __init__(self, tile_map_txt, tile_sheet_png):
@@ -27,7 +28,11 @@ class Level:
             for line in f :
                 if not line.strip():
                     continue
-                x, y, w, h, sx, sy, sw, sh = map(int, line.strip().split(','))
+                parts = line.strip().split(',')
+                x, y, w, h, sx, sy, sw, sh = map(int, parts[:8])
+                is_solid = int(parts[8])if len(parts) > 8 else 1
+                p_type   = parts[9]       if len(parts) > 9 else "ground"
+
                 
                 #extraire le sprite correspondant du spritesheet
                 sprite = self.spritesheet.get_image(sx, sy, sw, sh)
@@ -35,12 +40,12 @@ class Level:
                 #redimensionner
                 sprite = pygame.transform.scale(sprite, (w, h))
                 
-                #créer la plateforme et l'ajouter au groupe
-                platform = Platform(x, y, sprite)
+                #creer la plateforme et l'ajouter au groupe
+                platform = Platform(x, y, sprite, p_type, is_solid)
                 self.platforms.add(platform)
     
     def draw(self, surface):
         self.platforms.draw(surface)
     
     def get_platforms(self):
-        self.platforms
+        return self.platforms
