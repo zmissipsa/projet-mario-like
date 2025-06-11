@@ -1,29 +1,40 @@
-# main.py
-
 import pygame
 from player import Player
 from level import Level
 from sprites import Brick, Coin, Spritesheet
 from enemy import Enemy, Spike
-
+import sprites
 
 pygame.init()
 screen = pygame.display.set_mode((1200, 600))
 pygame.display.set_caption("Mario-like")
 clock = pygame.time.Clock()
 
-level = Level("niveau1.txt", "tiles.xcf")
+#Liste des niveaux
+level_files = ["niveau1.txt","niveau2.txt","niveau3.txt"]
+current_level_index = 0
 
-# Creer le player
-player = Player(100, 100)
-#player_group = pygame.sprite.Group()
-#player_group.add(player)
+# Font pour le score
+font = pygame.font.SysFont(None, 36)
 
-spritesheet = Spritesheet("assets/images/tiles.xcf")
+#charger le premier niveau
+level = Level(level_files[current_level_index], "tiles.xcf")
 
+spritesheet = sprites.Spritesheet("assets/images/tiles.xcf")
+
+# Groupes
 bricks = pygame.sprite.Group()
-brick1 = Brick(300, 250, spritesheet, breakable=True)
-brick2 = Brick(900, 350, spritesheet, breakable=True)
+collectibles = pygame.sprite.Group()  # contiendra pièces et étoiles
+
+# Création de briques : coin ou star
+brick1 = sprites.Brick(300, 250, spritesheet, breakable=True, content="coin")
+brick2 = sprites.Brick(900, 350, spritesheet, breakable=True, content="star")
+brick3 = sprites.Brick(500, 250, spritesheet, breakable=True, content="coin")
+brick4 = sprites.Brick(700, 300, spritesheet, breakable=True, content="star")
+
+bricks.add(brick3, brick4)
+
+
 bricks.add(brick1, brick2)
 
 coins = pygame.sprite.Group()
@@ -46,6 +57,13 @@ spike1 = Spike(1050, GROUND_Y, spritesheet=enemy_spritesheet)
 spike2 = Spike(200, GROUND_Y, spritesheet=enemy_spritesheet)
 spikes.add(spike1, spike2)
 
+# Créer le player
+player = Player(100, 100)
+
+# Score
+score = 0
+coins_collected = 0
+stars_collected = 0
 
 running = True
 while running:
@@ -56,16 +74,16 @@ while running:
             running = False
 
     # Update
-
     plateforms = level.get_platforms()
     player.update(plateforms)
-
     bricks.update()
     coins.update()
     enemies.update()
     spikes.update()
 
+    collectibles.update()
 
+    # Collision avec les briques
     for brick in bricks:
      if brick.rect.colliderect(player.rect):  # ou une détection précise du saut
         coin = brick.break_brick()
@@ -92,6 +110,29 @@ while running:
         pygame.time.wait(2000)  # Pause 2 secondes
         running = False  # Ferme le jeu
 
+    if player.rect.colliderect(brick.rect) and player.is_jumping_up:
+        item = brick.break_brick()
+        if item:
+            collectibles.add(item)
+            if isinstance(item, sprites.Coin):
+                score += 10
+                coins_collected += 1
+            elif isinstance(item, sprites.Star):
+                score += 50
+                stars_collected += 1
+    
+    for platform in plateforms:
+        if platform.type == "flag" and player.rect.colliderect(platform.rect):
+            current_level_index += 1
+            if current_level_index >= len(level_files):
+                print("Jeu terminé")
+                running = False
+                break
+            else:
+                level = Level(level_files[current_level_index], "tiles.xcf")
+                player.rect.topleft = (100,100) #Réinitialise la position du joueur
+                break
+    
     # Affichage
     screen.fill((135, 206, 235))  # Bleu ciel
 
@@ -102,13 +143,15 @@ while running:
     enemies.draw(screen)
     spikes.draw(screen)
     
-    pygame.display.flip()
 
-    for platform in plateforms:
-        if platform.type == "flag" and player.rect.colliderect(platform.rect):
-            #passer au niveau 2
-            level = Level("niveau2.txt", "tiles.xcf")
-            player.rect.topleft = (100,100) #Réinitialise la position du joueur
-            break
+    # Affichage texte
+    score_text = font.render(f"Score: {score}", True, (0, 0, 0))
+    coins_text = font.render(f"Pièces: {coins_collected}", True, (255, 215, 0))
+    stars_text = font.render(f"Étoiles: {stars_collected}", True, (255, 255, 255))
+    screen.blit(score_text, (10, 10))
+    screen.blit(coins_text, (10, 40))
+    screen.blit(stars_text, (10, 70))
+
+    pygame.display.flip()
 
 pygame.quit()
