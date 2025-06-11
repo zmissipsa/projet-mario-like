@@ -10,16 +10,15 @@ screen = pygame.display.set_mode((1200, 600))
 pygame.display.set_caption("Mario-like")
 clock = pygame.time.Clock()
 
-#Liste des niveaux
-level_files = ["niveau1.txt","niveau2.txt","niveau3.txt"]
+# Liste des niveaux
+level_files = ["niveau1.txt", "niveau2.txt", "niveau3.txt"]
 current_level_index = 0
 
 # Font pour le score
 font = pygame.font.SysFont(None, 36)
 
-#charger le premier niveau
+# Charger le premier niveau
 level = Level(level_files[current_level_index], "tiles.xcf")
-
 spritesheet = sprites.Spritesheet("assets/images/tiles.xcf")
 
 # Groupes
@@ -31,33 +30,23 @@ brick1 = sprites.Brick(300, 250, spritesheet, breakable=True, content="coin")
 brick2 = sprites.Brick(900, 350, spritesheet, breakable=True, content="star")
 brick3 = sprites.Brick(500, 250, spritesheet, breakable=True, content="coin")
 brick4 = sprites.Brick(700, 300, spritesheet, breakable=True, content="star")
+bricks.add(brick1, brick2, brick3, brick4)
 
-bricks.add(brick3, brick4)
-
-
-bricks.add(brick1, brick2)
-
-coins = pygame.sprite.Group()
-
+# Ennemis
 enemy_spritesheet = Spritesheet("./assets/images/characters.gif")
 enemy1 = Enemy(400, 500, 400, 600, spritesheet=enemy_spritesheet)
 enemy2 = Enemy(700, 500, 700, 900, spritesheet=enemy_spritesheet)
-print(enemy1.image.get_size())  # Doit être (48, 48)
-print(enemy1.rect.topleft)      # Vérifie la position sur l’écran
-
 enemies = pygame.sprite.Group()
 enemies.add(enemy1, enemy2)
 
-# Créer des pics (pièges)
+# Pics
 spikes = pygame.sprite.Group()
-SPIKE_SIZE = 48
-GROUND_Y = 500  # ou la hauteur réelle de la plateforme
-
+GROUND_Y = 500
 spike1 = Spike(1050, GROUND_Y, spritesheet=enemy_spritesheet)
 spike2 = Spike(200, GROUND_Y, spritesheet=enemy_spritesheet)
 spikes.add(spike1, spike2)
 
-# Créer le player
+# Joueur
 player = Player(100, 100)
 
 # Score
@@ -77,50 +66,42 @@ while running:
     plateforms = level.get_platforms()
     player.update(plateforms)
     bricks.update()
-    coins.update()
+    collectibles.update()
     enemies.update()
     spikes.update()
 
-    collectibles.update()
-
-    # Collision avec les briques
+    # Collision avec les briques et score
     for brick in bricks:
-     if brick.rect.colliderect(player.rect):  # ou une détection précise du saut
-        coin = brick.break_brick()
-        if coin:
-            coins.add(coin)
+        if brick.rect.colliderect(player.rect) and player.is_jumping_up:
+            item = brick.break_brick()
+            if item:
+                collectibles.add(item)
+                if isinstance(item, sprites.Coin):
+                    score += 10
+                    coins_collected += 1
+                elif isinstance(item, sprites.Star):
+                    score += 50
+                    stars_collected += 1
 
- # Collisions avec les ennemis
+    # Collisions avec les ennemis
     for enemy in enemies:
         if pygame.sprite.collide_rect(player, enemy) and enemy.alive:
             if player.vel_y > 0 and player.rect.bottom <= enemy.rect.top + 10:
                 enemy.kill_enemy()
                 player.vel_y = -10  # rebond
             else:
-                # Joueur meurt
                 player.rect.topleft = (100, 100)
 
     # Collisions avec les pics
-    # Collision mortelle avec un spike
     if pygame.sprite.spritecollide(player, spikes, False):
         font = pygame.font.SysFont("Arial", 72)
         game_over_text = font.render("GAME OVER", True, (255, 0, 0))
         screen.blit(game_over_text, (400, 250))
         pygame.display.flip()
-        pygame.time.wait(2000)  # Pause 2 secondes
-        running = False  # Ferme le jeu
+        pygame.time.wait(2000)
+        running = False
 
-    if player.rect.colliderect(brick.rect) and player.is_jumping_up:
-        item = brick.break_brick()
-        if item:
-            collectibles.add(item)
-            if isinstance(item, sprites.Coin):
-                score += 10
-                coins_collected += 1
-            elif isinstance(item, sprites.Star):
-                score += 50
-                stars_collected += 1
-    
+    # Passage de niveau
     for platform in plateforms:
         if platform.type == "flag" and player.rect.colliderect(platform.rect):
             current_level_index += 1
@@ -130,19 +111,17 @@ while running:
                 break
             else:
                 level = Level(level_files[current_level_index], "tiles.xcf")
-                player.rect.topleft = (100,100) #Réinitialise la position du joueur
+                player.rect.topleft = (100, 100)
                 break
-    
+
     # Affichage
     screen.fill((135, 206, 235))  # Bleu ciel
-
-    level.draw(screen)                      # Dessin des plateforms
-    screen.blit(player.image, player.rect)   # Dessin du joueur
+    level.draw(screen)
+    screen.blit(player.image, player.rect)
     bricks.draw(screen)
-    coins.draw(screen)
+    collectibles.draw(screen)
     enemies.draw(screen)
     spikes.draw(screen)
-    
 
     # Affichage texte
     score_text = font.render(f"Score: {score}", True, (0, 0, 0))
