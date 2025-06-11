@@ -12,8 +12,8 @@ class Spritesheet:
 class Brick(pygame.sprite.Sprite):
     def __init__(self, x, y, sheet, breakable=True, content="coin"):
         super().__init__()
-        self.sheet = sheet
-        self.image = sheet.get_image(384, 63, 16, 16)
+        self.sheet = sheet                         # garde une référence
+        self.image = sheet.get_image(384, 63, 16, 16)  # sprite brique intacte
         self.image = pygame.transform.scale(self.image, (32, 32))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.breakable = breakable
@@ -23,9 +23,8 @@ class Brick(pygame.sprite.Sprite):
     def break_brick(self):
         if not self.breakable:
             return None
-
+        # on détruit la brique et on crée la pièce
         self.kill()
-
         if self.content == "coin":
             return Coin(self.rect.centerx, self.rect.top - 10, self.sheet)
         elif self.content == "star":
@@ -46,7 +45,6 @@ class Coin(pygame.sprite.Sprite):
         self.timer -= 1
         if self.timer <= 0:
             self.kill()
-            
 class Star(pygame.sprite.Sprite):
     def __init__(self, x, y, sheet):
         super().__init__()
