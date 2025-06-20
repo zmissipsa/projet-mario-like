@@ -21,62 +21,32 @@ font = pygame.font.SysFont(None, 36)
 enemy_spritesheet = sprites.Spritesheet("./assets/images/characters.gif")
 tiles_spritesheet = sprites.Spritesheet("assets/images/tiles.xcf")
 
-def load_level(level_index):
-    level = Level(level_files[level_index], "tiles.xcf")
+# Groupes
+bricks = pygame.sprite.Group()
+collectibles = pygame.sprite.Group()  # contiendra pièces et étoiles
 
-    # Groupes vides
-    bricks = pygame.sprite.Group()
-    enemies = pygame.sprite.Group()
-    spikes = pygame.sprite.Group()
-    collectibles = pygame.sprite.Group()
+# Création de briques : coin ou star
+brick1 = sprites.Brick(300, 250, spritesheet, breakable=True, content="coin")
+brick2 = sprites.Brick(900, 350, spritesheet, breakable=True, content="star")
+brick3 = sprites.Brick(500, 250, spritesheet, breakable=True, content="coin")
+brick4 = sprites.Brick(700, 300, spritesheet, breakable=True, content="star")
+bricks.add(brick1, brick2, brick3, brick4)
 
-    # Selon le niveau, créer briques, ennemis, spikes
-    if level_index == 0:
-        bricks.add(
-            sprites.Brick(300, 250, tiles_spritesheet, breakable=True, content="coin"),
-            sprites.Brick(900, 350, tiles_spritesheet, breakable=True, content="star"),
-            sprites.Brick(500, 250, tiles_spritesheet, breakable=True, content="coin"),
-            sprites.Brick(700, 300, tiles_spritesheet, breakable=True, content="star"),
-        )
-        enemies.add(
-            Enemy(400, 500, 400, 600, spritesheet=enemy_spritesheet),
-            Enemy(700, 500, 700, 900, spritesheet=enemy_spritesheet),
-        )
-        spikes.add(
-            Spike(1050, GROUND_Y, spritesheet=enemy_spritesheet),
-            Spike(200, GROUND_Y, spritesheet=enemy_spritesheet),
-        )
-    elif level_index == 1:
-        # Exemple niveau 2 : modifier coordonnées selon besoin
-        bricks.add(
-            sprites.Brick(350, 300, tiles_spritesheet, breakable=True, content="coin"),
-            sprites.Brick(800, 280, tiles_spritesheet, breakable=True, content="star"),
-        )
-        enemies.add(
-            Enemy(500, 500, 450, 650, spritesheet=enemy_spritesheet),
-        )
-        spikes.add(
-            Spike(1000, GROUND_Y, spritesheet=enemy_spritesheet),
-        )
-    elif level_index == 2:
-        # Exemple niveau 3 : modifier coordonnées selon besoin
-        bricks.add(
-            sprites.Brick(400, 260, tiles_spritesheet, breakable=True, content="coin"),
-            sprites.Brick(850, 330, tiles_spritesheet, breakable=True, content="star"),
-        )
-        enemies.add(
-            Enemy(600, 500, 550, 750, spritesheet=enemy_spritesheet),
-            Enemy(900, 500, 850, 1050, spritesheet=enemy_spritesheet),
-        )
-        spikes.add(
-            Spike(1100, GROUND_Y, spritesheet=enemy_spritesheet),
-        )
+# Ennemis
+enemy_spritesheet = Spritesheet("./assets/images/characters.gif")
+enemy1 = Enemy(400, 500, 400, 600, spritesheet=enemy_spritesheet)
+enemy2 = Enemy(700, 500, 700, 900, spritesheet=enemy_spritesheet)
+enemies = pygame.sprite.Group()
+enemies.add(enemy1, enemy2)
 
-    return level, bricks, enemies, spikes, collectibles
+# Pics
+spikes = pygame.sprite.Group()
+GROUND_Y = 500
+spike1 = Spike(1050, GROUND_Y, spritesheet=enemy_spritesheet)
+spike2 = Spike(200, GROUND_Y, spritesheet=enemy_spritesheet)
+spikes.add(spike1, spike2)
 
-# Charger premier niveau
-level, bricks, enemies, spikes, collectibles = load_level(current_level_index)
-
+# Joueur
 player = Player(100, 100)
 
 score = 0
