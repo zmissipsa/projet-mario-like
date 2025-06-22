@@ -69,3 +69,62 @@ class Spike(pygame.sprite.Sprite):
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
+    # À ajouter à la fin de enemy.py
+class PiranhaPlant(pygame.sprite.Sprite):
+    def __init__(self, x, y, spritesheet):
+        super().__init__()
+        self.sheet = spritesheet
+
+        # Agrandir images (2x taille)
+        self.closed_img = pygame.transform.scale(
+            spritesheet.get_image(351, 174, 18, 33),
+            (36, 66)
+        )
+        self.open_img = pygame.transform.scale(
+            spritesheet.get_image(330, 179, 25, 29),
+            (50, 58)
+        )
+
+        self.image = self.closed_img
+        
+        # Position fermée plus basse (plus enfoncée dans le tuyau)
+        y_closed = y + 55
+        self.rect = self.image.get_rect(bottomleft=(x, y_closed))
+
+        self.base_y = y_closed
+        self.up_y = y_closed - 65  # hauteur sortie un peu plus haute
+
+        self.speed = 1
+
+        self.state = "hidden"
+        self.timer = pygame.time.get_ticks()
+
+    def update(self):
+        now = pygame.time.get_ticks()
+
+        if self.state == "hidden":
+            if now - self.timer > 2000:
+                self.state = "rising"
+                self.timer = now
+
+        elif self.state == "rising":
+            self.rect.y -= self.speed
+            if self.rect.y <= self.up_y:
+                self.rect.y = self.up_y
+                self.state = "open"
+                self.timer = now
+                self.image = self.open_img
+
+        elif self.state == "open":
+            if now - self.timer > 2000:
+                self.state = "falling"
+                self.timer = now
+                self.image = self.closed_img
+
+        elif self.state == "falling":
+            self.rect.y += self.speed
+            if self.rect.y >= self.base_y:
+                self.rect.y = self.base_y
+                self.state = "hidden"
+                self.timer = now
+
