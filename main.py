@@ -7,7 +7,8 @@ from menu import menu
 # Constantes
 SCREEN_W, SCREEN_H = 1200, 600
 GROUND_Y = 500
-COUNTDOWN_MS = 3000  # 10 secondes avant démarrage du jeu
+
+COUNTDOWN_MS = 3000 # 10 secondes avant démarrage du jeu
 
 # Initialisation Pygame et fenêtre
 pygame.init()
@@ -126,7 +127,7 @@ collectibles = pygame.sprite.Group()
 spawn_x = 100
 player = Player(spawn_x, find_spawn(level, spawn_x))
 
-level_start_ms = pygame.time.get_ticks()
+game_start_ms = pygame.time.get_ticks()
 
 # Variables de score
 score = 0
@@ -143,7 +144,7 @@ while running:
         if ev.type == pygame.QUIT:
             running = False
 
-    if countdown_left(level_start_ms) > 0:
+    if countdown_left(game_start_ms) > 0:
         enemies.update()
         plantes_group.update()
 
@@ -156,7 +157,7 @@ while running:
             group.draw(screen)
         screen.blit(player.image, (player.rect.x - cam_x, player.rect.y))
 
-        sec = countdown_left(level_start_ms) // 1000 + 1
+        sec = countdown_left(game_start_ms) // 1000 + 1
         countdown_text = pygame.font.SysFont(None, 72).render(str(sec), True, (255, 0, 0))
         screen.blit(countdown_text, countdown_text.get_rect(center=(SCREEN_W // 2, SCREEN_H // 2)))
 
@@ -217,8 +218,14 @@ while running:
             collectibles.empty()
             spawn_x = 100
             player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
-            level_start_ms = pygame.time.get_ticks()
             break
+
+    # Calcul du temps écoulé en minutes:secondes, sans le compte à rebours
+    elapsed_ms = max(0, pygame.time.get_ticks() - (game_start_ms + COUNTDOWN_MS))
+    elapsed_sec = elapsed_ms // 1000
+    minutes = elapsed_sec // 60
+    seconds = elapsed_sec % 60
+
 
     # Caméra
     cam_x = max(0, player.rect.centerx - SCREEN_W // 2)
@@ -237,6 +244,8 @@ while running:
     screen.blit(font.render(f"Pièces : {coins}", True, (255, 215, 0)), (10, 40))
     screen.blit(font.render(f"Étoiles : {stars}", True, (255, 215, 0)), (10, 70))
     screen.blit(font.render(f"Vies : {player.lives}", True, (255, 0, 0)), (10, 100))
+    screen.blit(font.render(f"Temps : {minutes:02}:{seconds:02}", True, (0, 0, 0)), (10, 100))
+
 
     pygame.display.flip()
 
