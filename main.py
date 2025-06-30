@@ -7,7 +7,7 @@ from menu import menu
 # Constantes
 SCREEN_W, SCREEN_H = 1200, 600
 GROUND_Y = 500
-COUNTDOWN_MS = 10000  # 10 secondes avant démarrage du jeu
+COUNTDOWN_MS = 3000  # 10 secondes avant démarrage du jeu
 
 # Initialisation Pygame et fenêtre
 pygame.init()
@@ -108,6 +108,12 @@ def countdown_left(start_ms):
     """Retourne le temps (en ms) restant avant que le jeu commence, 0 si terminé."""
     return max(0, COUNTDOWN_MS - (pygame.time.get_ticks() - start_ms))
 
+def show_game_over():
+    text = pygame.font.SysFont("Arial", 72).render("GAME OVER", True, (255, 0, 0))
+    screen.blit(text, text.get_rect(center=(SCREEN_W//2, SCREEN_H//2)))
+    pygame.display.flip()
+    pygame.time.wait(2000)
+
 # Chargement des niveaux
 level_files = ["niveau1.txt", "niveau2.txt"]
 current_level_id = 0
@@ -164,6 +170,28 @@ while running:
         group.update()
 
     # Collision briques
+    for e in enemies:
+        if pygame.sprite.collide_rect(player, e) and e.alive:
+            if player.vel_y > 0 and player.rect.bottom <= e.rect.top + 10:
+                e.kill_enemy()
+                player.vel_y = -10
+            else:
+                player.lose_life()
+                if player.lives <= 0:
+                    show_game_over()
+                    running = False
+                break
+
+    # --- Collisions pics/plantes ---
+    for group in (spikes, plantes_group):
+        if pygame.sprite.spritecollide(player, group, False):
+            player.lose_life()
+            if player.lives <= 0:
+                show_game_over()
+                running = False
+            break
+
+    # --- Briques & Collectibles ---
     for b in bricks:
         if b.rect.colliderect(player.rect) and player.is_jumping_up:
             item = b.break_brick()
@@ -176,43 +204,6 @@ while running:
                     score += 50
                     stars += 1
 
-    
-    # Collision ennemis
-    for e in enemies:
-        if pygame.sprite.collide_rect(player, e) and e.alive:
-            if player.vel_y > 0 and player.rect.bottom <= e.rect.top + 10:
-                if isinstance(e, BlueGoomba):
-                    e.crush()
-                else:
-                    e.kill_enemy()
-                player.vel_y = -10
-            else:
-                game_over_text = game_over_font.render("GAME OVER", True, (255, 0, 0))
-                screen.blit(game_over_text, (400, 250))
-                pygame.display.flip()
-                pygame.time.wait(2000)
-                running = False
-                break  # sort de la boucle ennemis
-
-    if not running:
-        break 
-
-
-# Collision pics
-    if pygame.sprite.spritecollide(player, spikes, False):
-        game_over_text = pygame.font.SysFont("Arial", 72).render("GAME OVER", True, (255, 0, 0))
-        screen.blit(game_over_text, (400, 250))
-        pygame.display.flip()
-        pygame.time.wait(2000)
-        break
-
-    # **Collision plantes Piranha (game over)**
-    if pygame.sprite.spritecollide(player, plantes_group, False):
-        game_over_text = pygame.font.SysFont("Arial", 72).render("GAME OVER", True, (255, 0, 0))
-        screen.blit(game_over_text, (400, 250))
-        pygame.display.flip()
-        pygame.time.wait(2000)
-        break
 
     # Passage de niveau
     for p in plats:
@@ -245,6 +236,7 @@ while running:
     screen.blit(font.render(f"Score : {score}", True, (0, 0, 0)), (10, 10))
     screen.blit(font.render(f"Pièces : {coins}", True, (255, 215, 0)), (10, 40))
     screen.blit(font.render(f"Étoiles : {stars}", True, (255, 215, 0)), (10, 70))
+    screen.blit(font.render(f"Vies : {player.lives}", True, (255, 0, 0)), (10, 100))
 
     pygame.display.flip()
 

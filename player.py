@@ -47,6 +47,10 @@ class Player(pygame.sprite.Sprite):
         # Préparation future pour les animations
         self.direction = "right"
 
+        #ajout de vies pour le joueur
+        self.lives = 3
+        self.start_position = (x,y)
+
     def handle_input(self):
         keys = pygame.key.get_pressed()
 
@@ -126,3 +130,9 @@ class Player(pygame.sprite.Sprite):
                         self.vel_y = 0
         if direction ==  "vertical" and self.vel_y != 0:
             self.on_ground = False
+    
+    def lose_life(self):
+        self.lives -= 1
+        self.rect.topleft = self.start_position
+        self.vel_x = 0
+        self.vel_y = 0
