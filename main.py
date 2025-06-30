@@ -2,8 +2,8 @@ import pygame
 from player import Player
 from level import Level
 from sprites import Brick, Coin, Star, Spritesheet
-from enemy import Enemy, Spike, PiranhaPlant
-
+from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba
+from menu import menu
 # Constantes
 SCREEN_W, SCREEN_H = 1200, 600
 GROUND_Y = 500
@@ -15,6 +15,7 @@ screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
 pygame.display.set_caption("Mario-like")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 36)
+menu(screen)
 
 # Chargement des spritesheets
 tiles_sheet = Spritesheet("assets/images/tiles.png")
@@ -56,6 +57,8 @@ def build_world_for_level(level_idx):
             Enemy(1500, GROUND_Y, 700, 1000, enemy_sheet),
             Enemy(1100, GROUND_Y, 1000, 1250, enemy_sheet),
             Enemy(1800, GROUND_Y, 1300, 1500, enemy_sheet),
+            BlueGoomba(1300, GROUND_Y - 35, enemy_sheet, 1000, 1400)
+
         )
 
         spikes.add(
@@ -125,6 +128,7 @@ coins = 0
 stars = 0
 
 # Boucle principale
+game_over_font = pygame.font.SysFont("Arial", 72)
 running = True
 while running:
     dt = clock.tick(60)  # Limite à 60 FPS
@@ -172,16 +176,29 @@ while running:
                     score += 50
                     stars += 1
 
+    
     # Collision ennemis
     for e in enemies:
         if pygame.sprite.collide_rect(player, e) and e.alive:
             if player.vel_y > 0 and player.rect.bottom <= e.rect.top + 10:
-                e.kill_enemy()
+                if isinstance(e, BlueGoomba):
+                    e.crush()
+                else:
+                    e.kill_enemy()
                 player.vel_y = -10
             else:
-                player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
+                game_over_text = game_over_font.render("GAME OVER", True, (255, 0, 0))
+                screen.blit(game_over_text, (400, 250))
+                pygame.display.flip()
+                pygame.time.wait(2000)
+                running = False
+                break  # sort de la boucle ennemis
 
-    # Collision pics
+    if not running:
+        break 
+
+
+# Collision pics
     if pygame.sprite.spritecollide(player, spikes, False):
         game_over_text = pygame.font.SysFont("Arial", 72).render("GAME OVER", True, (255, 0, 0))
         screen.blit(game_over_text, (400, 250))
@@ -232,6 +249,3 @@ while running:
     pygame.display.flip()
 
 pygame.quit()
-
-
-

@@ -127,4 +127,56 @@ class PiranhaPlant(pygame.sprite.Sprite):
                 self.rect.y = self.base_y
                 self.state = "hidden"
                 self.timer = now
+class BlueGoomba(pygame.sprite.Sprite):
+    def __init__(self, x, y, spritesheet, min_x, max_x):
+        super().__init__()
+        self.sheet = spritesheet
+
+        # Récupère les images
+        self.normal_img = pygame.transform.scale(
+            spritesheet.get_image(238,185,18, 22),
+            (48, 48)  # ou une autre taille selon ton jeu
+        )
+        self.crushed_img = pygame.transform.scale(
+            spritesheet.get_image(220, 187, 16, 21),
+            (32, 16)  # écrasé plus petit en hauteur
+        )
+
+        self.image = self.normal_img
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+        # Mouvements
+        self.speed = 2
+        self.direction = 1  # commence vers la droite
+        self.min_x = min_x
+        self.max_x = max_x
+        self.alive = True
+        self.timer = None
+        
+
+    def update(self):
+        if self.alive:
+            # Déplacement va-et-vient
+            self.rect.x += self.speed * self.direction
+
+            # Inverse la direction si on dépasse les bornes
+            if self.rect.x < self.min_x:
+                self.rect.x = self.min_x
+                self.direction = 1
+            elif self.rect.x > self.max_x:
+                self.rect.x = self.max_x
+                self.direction = -1
+        else:
+            if self.timer and pygame.time.get_ticks() - self.timer > 500:
+                self.kill()
+
+    def crush(self):
+        # Appelé quand Mario saute dessus
+        if self.alive:
+            self.image = self.crushed_img
+            # Ajuste le rect car l'image est plus petite
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+            self.alive = False
+            self.timer = pygame.time.get_ticks()
+
 
