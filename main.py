@@ -117,9 +117,8 @@ def find_spawn(level, x_world):
         best_top = GROUND_Y - 50
     return best_top - 48
 
-def countdown_left(start_ms):
-    """Retourne le temps (en ms) restant avant que le jeu commence, 0 si terminé."""
-    return max(0, COUNTDOWN_MS - (pygame.time.get_ticks() - start_ms))
+def countdown_left(level_start_ms):
+    return max(0, COUNTDOWN_MS - (pygame.time.get_ticks() - level_start_ms))
 
 def show_game_over():
     text = pygame.font.SysFont("Arial", 72).render("GAME OVER", True, (255, 0, 0))
@@ -140,7 +139,9 @@ def run_game():
     spawn_x = 100
     player = Player(spawn_x, find_spawn(level, spawn_x))
     player.start_position = player.rect.topleft
-    level_start_ms = pygame.time.get_ticks()
+    game_start_ms = pygame.time.get_ticks()  # le vrai départ de la partie
+    level_enter_ms = game_start_ms           # pour le compte à rebours du niveau 1
+
 
     # Variables de score
     score = 0
@@ -155,7 +156,7 @@ def run_game():
             if ev.type == pygame.QUIT:
                 return "quit"
 
-        if countdown_left(level_start_ms) > 0:
+        if countdown_left(level_enter_ms) > 0:
             enemies.update()
             plantes_group.update()
 
@@ -168,7 +169,7 @@ def run_game():
                 group.draw(screen)
             screen.blit(player.image, (player.rect.x - cam_x, player.rect.y))
 
-            sec = countdown_left(level_start_ms) // 1000 + 1
+            sec = countdown_left(game_start_ms) // 1000 + 1
             countdown_text = pygame.font.SysFont(None, 72).render(str(sec), True, (255, 0, 0))
             screen.blit(countdown_text, countdown_text.get_rect(center=(SCREEN_W // 2, SCREEN_H // 2)))
 
@@ -242,11 +243,11 @@ def run_game():
                 collectibles.empty()
                 spawn_x = 100
                 player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
-                level_start_ms = pygame.time.get_ticks()
+                level_enter_ms = pygame.time.get_ticks()
                 break
 
         # Calcul du temps écoulé en minutes:secondes, sans le compte à rebours
-        elapsed_ms = max(0, pygame.time.get_ticks() - (level_start_ms + COUNTDOWN_MS))
+        elapsed_ms = max(0, pygame.time.get_ticks() - (game_start_ms + COUNTDOWN_MS))
         elapsed_sec = elapsed_ms // 1000
         minutes = elapsed_sec // 60
         seconds = elapsed_sec % 60
@@ -268,6 +269,7 @@ def run_game():
         screen.blit(font.render(f"Pièces : {coins}", True, (255, 215, 0)), (10, 40))
         screen.blit(font.render(f"Étoiles : {stars}", True, (255, 215, 0)), (10, 70))
         screen.blit(font.render(f"Vies : {player.lives}", True, (255, 0, 0)), (10, 100))
+        screen.blit(font.render(f"Temps : {minutes:02}:{seconds:02}", True, (0, 0, 0)), (10, 130))
 
         pygame.display.flip()
 
