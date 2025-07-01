@@ -5,6 +5,7 @@ from sprites import Brick, Coin, Star, Spritesheet
 from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba
 from menu import menu
 from sprites import MovingPlatform
+import sys
 
 # Constantes
 SCREEN_W, SCREEN_H = 1200, 600
@@ -156,6 +157,37 @@ def show_you_win():
     pygame.display.flip()
     pygame.time.wait(2000)
 
+def level_screen(lvl_id, screen, score, time_ms):         #ecran de fin de niveau
+    font_title = pygame.font.SysFont("Arial", 64)
+    font_small = pygame.font.SysFont("Arial", 36)
+
+    minutes = (time_ms // 1000) // 60
+    seconds = (time_ms // 1000) % 60
+
+    while True:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if ev.type == pygame.KEYDOWN:
+                if ev.key == pygame.K_RETURN:
+                    return  # Passe au niveau suivant
+        
+        screen.fill((135, 206, 235))  # Fond bleu ciel
+        title = font_title.render(f"Niveau {lvl_id} terminé ", True, (255, 255, 0))
+        score_text = font_small.render(f"Score total : {score}", True, (255, 255, 255))
+        time_text = font_small.render(f"Temps : {minutes:02}:{seconds:02}", True, (255, 255, 255))
+        hint_text = font_small.render("Appuie sur Entrée pour continuer", True, (0, 0, 0))
+
+        screen.blit(title, title.get_rect(center=(SCREEN_W // 2, 150)))
+        screen.blit(score_text, score_text.get_rect(center=(SCREEN_W // 2, 250)))
+        screen.blit(time_text, time_text.get_rect(center=(SCREEN_W // 2, 300)))
+        screen.blit(hint_text, hint_text.get_rect(center=(SCREEN_W // 2, 400)))
+
+        pygame.display.flip()
+        clock.tick(60)
+
+
 def run_game():
     # Chargement des niveaux
     level_files = ["niveau1.txt", "niveau2.txt", "niveau3.txt"]
@@ -242,7 +274,6 @@ def run_game():
                     if (isinstance(e, BlueGoomba) or isinstance(e, Enemy)):
                         e.crush()
                     player.vel_y = -10
-                    player.vel_y = -10
                 else:
                     if hit_sound:
                         hit_sound.play()
@@ -291,14 +322,21 @@ def run_game():
                         win_sound.play()
                     show_you_win()
                     return "menu"
+                else:
+                    summary_start = pygame.time.get_ticks()     #temps avant la page de fin de niveau
+                    level_screen(current_level_id, screen, score, pygame.time.get_ticks() - game_start_ms)
+                    summary_end = pygame.time.get_ticks()     #temps apres la page de fin de niveau
+                    
+                    #mise a jour du temps
+                    game_start_ms += summary_end - summary_start
 
-                level = Level(level_files[current_level_id], "tiles.png")
-                bricks, enemies, spikes, plantes_group, moving_platforms = build_world_for_level(current_level_id)
-                collectibles.empty()
-                spawn_x = 100
-                player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
-                level_enter_ms = pygame.time.get_ticks()
-                break
+                    level = Level(level_files[current_level_id], "tiles.png")
+                    bricks, enemies, spikes, plantes_group, moving_platforms = build_world_for_level(current_level_id)
+                    collectibles.empty()
+                    spawn_x = 100
+                    player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
+                    level_enter_ms = pygame.time.get_ticks()
+                    break
 
         # Calcul du temps écoulé en minutes:secondes, sans le compte à rebours
         elapsed_ms = max(0, pygame.time.get_ticks() - (game_start_ms + COUNTDOWN_MS))
