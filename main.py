@@ -72,7 +72,6 @@ def build_world_for_level(level_idx):
             spike.image.set_alpha(0)  # invisible
             spikes.add(spike)
 
-        
     elif level_idx == 1:
         bricks.add(
             Brick(300, 250, tiles_sheet, True, "coin"),
@@ -295,7 +294,7 @@ def run_game():
                 break
 
         # Calcul du temps écoulé en minutes:secondes, sans le compte à rebours
-        elapsed_ms = max(0, pygame.time.get_ticks() - (level_start_ms + COUNTDOWN_MS))
+        elapsed_ms = max(0, pygame.time.get_ticks() - (game_start_ms + COUNTDOWN_MS))
         elapsed_sec = elapsed_ms // 1000
         minutes = elapsed_sec // 60
         seconds = elapsed_sec % 60

@@ -69,7 +69,13 @@ class Spike(pygame.sprite.Sprite):
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
-        
+<<<<<<< HEAD
+    # À ajouter à la fin de enemy.py
+
+
+=======
+    
+>>>>>>> d3a1d164ac9239767f9bec3309cc133406a8f381
 class PiranhaPlant(pygame.sprite.Sprite):
     def __init__(self, x, y, spritesheet):
         super().__init__()
