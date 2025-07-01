@@ -15,6 +15,10 @@ class Enemy(pygame.sprite.Sprite):
         # Image retournée horizontalement (direction gauche)
         self.image_right = original_image
         self.image_left = pygame.transform.flip(original_image, True, False)
+
+        self.crushed_img = pygame.transform.scale(
+            spritesheet.get_image(334, 215, 16, 15),(32, 25)  # écrasé plus petit en hauteur
+        )
         
         # Par défaut, regarde vers la droite
         self.image = self.image_right
@@ -30,6 +34,8 @@ class Enemy(pygame.sprite.Sprite):
 
     def update(self):
         if not self.alive:
+            if self.timer and pygame.time.get_ticks() - self.timer > 500:
+                self.kill()
             return
         self.rect.x += self.speed * self.direction
 
@@ -49,8 +55,14 @@ class Enemy(pygame.sprite.Sprite):
         if self.alive:
             surface.blit(self.image, self.rect)
 
-    def kill_enemy(self):
-        self.alive = False
+    def crush(self):
+        # Appelé quand Mario saute dessus
+        if self.alive:
+            self.image = self.crushed_img
+            # Ajuste le rect car l'image est plus petite
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+            self.alive = False
+            self.timer = pygame.time.get_ticks()
 
 # Obstacle fixe
 class Spike(pygame.sprite.Sprite):
@@ -69,13 +81,7 @@ class Spike(pygame.sprite.Sprite):
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
-<<<<<<< HEAD
-    # À ajouter à la fin de enemy.py
 
-
-=======
-    
->>>>>>> d3a1d164ac9239767f9bec3309cc133406a8f381
 class PiranhaPlant(pygame.sprite.Sprite):
     def __init__(self, x, y, spritesheet):
         super().__init__()

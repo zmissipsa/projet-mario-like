@@ -227,14 +227,13 @@ def run_game():
             group.update()
         moving_platforms.update()  # Rampes
 
-        # Collision briques
+        # Collision enemies
         for e in enemies:
             if pygame.sprite.collide_rect(player, e) and e.alive:
-                if player.vel_y > 0 and player.rect.bottom <= e.rect.top + 10:
-                    if isinstance(e, BlueGoomba):
+                if player.vel_y > 0 and player.rect.bottom - e.rect.top < 20:
+                    if (isinstance(e, BlueGoomba) or isinstance(e, Enemy)):
                         e.crush()
-                    else:
-                        e.kill_enemy()
+                    player.vel_y = -10
                     player.vel_y = -10
                 else:
                     if hit_sound:
