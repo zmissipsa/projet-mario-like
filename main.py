@@ -10,6 +10,18 @@ GROUND_Y = 500
 
 COUNTDOWN_MS = 3000 # 10 secondes avant démarrage du jeu
 
+# Initialiser sons du jeu
+try:
+    pygame.mixer.init()
+    hit_sound = pygame.mixer.Sound("assets/sounds/bump.ogg")            # Quand joueur touche un ennemi
+    game_over_sound = pygame.mixer.Sound("assets/sounds/death.wav")     # Quand joueur perd
+    coin_sound = pygame.mixer.Sound("assets/sounds/coin.ogg")           # Coin
+except Exception as e:
+    hit_sound = None
+    game_over_sound = None
+    coin_sound = None
+    print("[WARNING] Le son de saut n'a pas pu être chargé :", e)
+
 # Initialisation Pygame et fenêtre
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_W, SCREEN_H))
@@ -113,11 +125,11 @@ def show_game_over():
     text = pygame.font.SysFont("Arial", 72).render("GAME OVER", True, (255, 0, 0))
     screen.blit(text, text.get_rect(center=(SCREEN_W//2, SCREEN_H//2)))
     pygame.display.flip()
-    pygame.time.wait(2000)
+    pygame.time.wait(3000)
 
 def run_game():
     # Chargement des niveaux
-    level_files = ["niveau1.txt", "niveau2.txt"]
+    level_files = ["niveau1.txt", "niveau2.txt", "niveau3.txt"]
     current_level_id = 0
 
     # Initialisation du niveau
@@ -176,8 +188,12 @@ def run_game():
                     e.kill_enemy()
                     player.vel_y = -10
                 else:
+                    if hit_sound:
+                        hit_sound.play()
                     player.lose_life()
                     if player.lives <= 0:
+                        if game_over_sound:
+                            game_over_sound.play()
                         show_game_over()
                         return "menu"
                     break
@@ -185,8 +201,12 @@ def run_game():
         # --- Collisions pics/plantes ---
         for group in (spikes, plantes_group):
             if pygame.sprite.spritecollide(player, group, False):
+                if hit_sound:
+                    hit_sound.play()
                 player.lose_life()
                 if player.lives <= 0:
+                    if game_over_sound:
+                        game_over_sound.play()
                     show_game_over()
                     return "menu"
                 break
@@ -203,6 +223,8 @@ def run_game():
                     elif isinstance(item, Star):
                         score += 50
                         stars += 1
+                    if coin_sound:
+                        coin_sound.play()
 
 
         # Passage de niveau
@@ -210,6 +232,8 @@ def run_game():
             if getattr(p, "type", None) == "flag" and player.rect.colliderect(p.rect):
                 current_level_id += 1
                 if current_level_id >= len(level_files):
+                    if game_over_sound:
+                        game_over_sound.play()
                     show_game_over()
                     return "menu"
                     

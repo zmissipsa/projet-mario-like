@@ -3,6 +3,16 @@
 import pygame
 from sprites import Spritesheet
 
+# 🔊 Initialiser le son de saut
+try:
+    pygame.mixer.init()
+    jump_sound = pygame.mixer.Sound("assets/sounds/small_jump.ogg")
+except Exception as e:
+    jump_sound = None
+    print("[WARNING] Le son de saut n'a pas pu être chargé :", e)
+
+
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -65,6 +75,8 @@ class Player(pygame.sprite.Sprite):
         if (keys[pygame.K_SPACE] or keys[pygame.K_w]) and self.on_ground:
             self.vel_y = -self.jump_strength
             self.on_ground = False
+            if jump_sound:
+                jump_sound.play()
 
     def apply_gravity(self):
         self.vel_y += self.gravity

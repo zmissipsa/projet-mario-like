@@ -178,5 +178,3 @@ class BlueGoomba(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.alive = False
             self.timer = pygame.time.get_ticks()
-
-

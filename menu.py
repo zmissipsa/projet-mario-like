@@ -9,7 +9,7 @@ def menu(screen):
     pygame.mixer.init()
     
     # Charger la musique du menu (remplace par le chemin correct de ton fichier)
-    pygame.mixer.music.load("assets/sounds/mario.mp3")
+    pygame.mixer.music.load("assets/sounds/main_theme.ogg")
     pygame.mixer.music.play(-1)  # jouer en boucle (-1)
 
     # Charger l'image Mario ici, après que l'écran soit initialisé
