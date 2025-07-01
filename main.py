@@ -38,6 +38,7 @@ font = pygame.font.SysFont(None, 36)
 # Chargement des spritesheets
 tiles_sheet = Spritesheet("assets/images/tiles.png")
 enemy_sheet = Spritesheet("assets/images/characters.gif")
+heart_sheet = Spritesheet("assets/images/coeur.png")
 
 def build_world_for_level(level_idx):
     bricks, enemies, spikes = (pygame.sprite.Group() for _ in range(3))
@@ -367,7 +368,13 @@ def run_game():
         screen.blit(font.render(f"Score : {score}", True, (0, 0, 0)), (10, 10))
         screen.blit(font.render(f"Pièces : {coins}", True, (255, 215, 0)), (10, 40))
         screen.blit(font.render(f"Étoiles : {stars}", True, (255, 215, 0)), (10, 70))
-        screen.blit(font.render(f"Vies : {player.lives}", True, (255, 0, 0)), (10, 100))
+        
+        # les vies du joueur
+        heart_img = pygame.transform.scale(heart_sheet.get_image(0,0,511,511), (32, 32))
+        for i in range(player.lives):
+            screen.blit(heart_img, (10 + i * 40, 100))  # espace entre les cœurs
+
+
         screen.blit(font.render(f"Temps : {minutes:02}:{seconds:02}", True, (0, 0, 0)), (10, 130))
 
         pygame.display.flip()
