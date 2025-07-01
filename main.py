@@ -18,10 +18,12 @@ try:
     hit_sound = pygame.mixer.Sound("assets/sounds/bump.ogg")            # Quand joueur touche un ennemi
     game_over_sound = pygame.mixer.Sound("assets/sounds/death.wav")     # Quand joueur perd
     coin_sound = pygame.mixer.Sound("assets/sounds/coin.ogg")           # Coin
+    win_sound = pygame.mixer.Sound("assets/sounds/win.mp3")
 except Exception as e:
     hit_sound = None
     game_over_sound = None
     coin_sound = None
+    win_sound = None
     print("[WARNING] Le son de saut n'a pas pu être chargé :", e)
 
 # Initialisation Pygame et fenêtre
@@ -147,6 +149,12 @@ def show_game_over():
     screen.blit(text, text.get_rect(center=(SCREEN_W//2, SCREEN_H//2)))
     pygame.display.flip()
     pygame.time.wait(3000)
+
+def show_you_win():
+    text = pygame.font.SysFont("Arial", 72).render("YOU WIN", True, (255, 0, 0))
+    screen.blit(text, text.get_rect(center=(SCREEN_W//2, SCREEN_H//2)))
+    pygame.display.flip()
+    pygame.time.wait(2000)
 
 def run_game():
     # Chargement des niveaux
@@ -279,9 +287,9 @@ def run_game():
             if getattr(p, "type", None) == "flag" and player.rect.colliderect(p.rect):
                 current_level_id += 1
                 if current_level_id >= len(level_files):
-                    if game_over_sound:
-                        game_over_sound.play()
-                    show_game_over()
+                    if win_sound:
+                        win_sound.play()
+                    show_you_win()
                     return "menu"
 
                 level = Level(level_files[current_level_id], "tiles.png")
