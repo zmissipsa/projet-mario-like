@@ -65,14 +65,18 @@ def build_world_for_level(level_idx):
             Brick(2000, 200, tiles_sheet, True, "coin")
         )
 
-        enemies.add(
-            Enemy(2000, GROUND_Y, 400, 700, enemy_sheet),
-            Enemy(1500, GROUND_Y, 700, 1000, enemy_sheet),
-            Enemy(1100, GROUND_Y, 1000, 1250, enemy_sheet),
-            Enemy(1800, GROUND_Y, 1300, 1500, enemy_sheet),
-            BlueGoomba(1300, GROUND_Y - 35, enemy_sheet, 1000, 1400)
+        enemy_positions = [
+            (2000, GROUND_Y, 400, 700),
+            (1500, GROUND_Y, 700, 1000),
+            (1100, GROUND_Y, 1000, 1250),  # celui qu’on veut ignorer
+            (1800, GROUND_Y, 1300, 1500),
+        ]
 
-        )
+        for x, y, left, right in enemy_positions:
+            if x != 1800 and x!=1100:
+                enemies.add(Enemy(x, y, left, right, enemy_sheet))
+
+        enemies.add(BlueGoomba(1300, GROUND_Y - 35, enemy_sheet, 1000, 1400))
 
         spikes.add(
             Spike(400, GROUND_Y, enemy_sheet),
@@ -82,29 +86,28 @@ def build_world_for_level(level_idx):
             Spike(1000, GROUND_Y, enemy_sheet),
             Spike(1200, GROUND_Y, enemy_sheet),
         )
-
-        # Liste des coordonnées des tuyaux (x, y)
         tuyaux = [
-            (1500, 450),  # tuyau 1
-            (1600, 400),  # tuyau 2
-            (1700, 350),  # tuyau 3
-            (1800, 300),  # tuyau 4
-            (1900, 350),  # tuyau 5
-            (2000, 400),  # tuyau 6
-            (2100, 450)   # tuyau 7
+            (1500, 450),  
+            (1600, 400),  
+            (1700, 350),  
+            (1800, 300),  
+            (1900, 350),  
+            (2000, 400),  
+            (2100, 450)   
         ]
 
-        # Indices des tuyaux où mettre la plante (1, 4, 6, 7)
         tuyaux_plantes_indices = [0, 3, 5, 6]
 
-        plante_height = 38  # Ajusté pour la taille correcte
+        plante_height = 38  
 
         for i in tuyaux_plantes_indices:
             x, y = tuyaux[i]
-            plante = PiranhaPlant(x + 25, y - plante_height, enemy_sheet)  # +25 pour centrage horizontal
+            plante = PiranhaPlant(x + 25, y - plante_height, enemy_sheet)
             plantes_group.add(plante)
 
     return bricks, enemies, spikes, plantes_group
+
+
 
 
 def find_spawn(level, x_world):
