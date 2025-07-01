@@ -63,7 +63,7 @@ class Coin(pygame.sprite.Sprite):
 class Star(pygame.sprite.Sprite):
     def __init__(self, x, y, sheet):
         super().__init__()
-        self.image = sheet.get_image(241, 81, 15, 15)  # adapte selon ta sprite sheet
+        self.image = sheet.get_image(438, 166, 48, 48)  # adapte selon ta sprite sheet
         self.image = pygame.transform.scale(self.image, (32, 32))
         self.rect = self.image.get_rect(center=(x, y))
         self.timer = 30
