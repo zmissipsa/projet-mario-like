@@ -182,11 +182,14 @@ def run_game():
         for group in (bricks, enemies, spikes, collectibles, plantes_group):
             group.update()
 
-        # Collision briques
+        # Collision enemies
         for e in enemies:
             if pygame.sprite.collide_rect(player, e) and e.alive:
                 if player.vel_y > 0 and player.rect.bottom <= e.rect.top + 10:
-                    e.kill_enemy()
+                    if isinstance(e, BlueGoomba):
+                        e.crush()
+                    else:
+                        e.kill_enemy()
                     player.vel_y = -10
                 else:
                     if hit_sound:

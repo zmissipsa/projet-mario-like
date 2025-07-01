@@ -10,7 +10,7 @@ class Enemy(pygame.sprite.Sprite):
         
         # Image originale (direction droite)
         original_image = pygame.transform.scale(
-            spritesheet.get_image(256, 368, 20, 35), (48, 48)
+            spritesheet.get_image(256, 368, 33, 33), (45, 45)
         )
         # Image retournée horizontalement (direction gauche)
         self.image_right = original_image
@@ -59,7 +59,7 @@ class Spike(pygame.sprite.Sprite):
         
         # Extraire le sprite des pics depuis le spritesheet général
         self.image = pygame.transform.scale(
-            spritesheet.get_image(124, 170, 20, 35), (48, 48)  # Coordonnées à ajuster selon l'image
+            spritesheet.get_image(126, 180, 16, 23), (45, 45) 
         )
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (x, y)
@@ -69,7 +69,7 @@ class Spike(pygame.sprite.Sprite):
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
-    # À ajouter à la fin de enemy.py
+    
 class PiranhaPlant(pygame.sprite.Sprite):
     def __init__(self, x, y, spritesheet):
         super().__init__()
@@ -81,8 +81,7 @@ class PiranhaPlant(pygame.sprite.Sprite):
             (36, 66)
         )
         self.open_img = pygame.transform.scale(
-            spritesheet.get_image(330, 179, 25, 29),
-            (50, 58)
+            spritesheet.get_image(333, 181, 18, 22),(50, 58)
         )
 
         self.image = self.closed_img
@@ -135,7 +134,7 @@ class BlueGoomba(pygame.sprite.Sprite):
         # Récupère les images
         self.normal_img = pygame.transform.scale(
             spritesheet.get_image(238,185,18, 22),
-            (48, 48)  # ou une autre taille selon ton jeu
+            (45, 45)  # ou une autre taille selon ton jeu
         )
         self.crushed_img = pygame.transform.scale(
             spritesheet.get_image(220, 187, 16, 21),
