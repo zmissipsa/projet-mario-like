@@ -4,6 +4,8 @@ from level import Level
 from sprites import Brick, Coin, Star, Spritesheet
 from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba
 from menu import menu
+from sprites import MovingPlatform
+
 # Constantes
 SCREEN_W, SCREEN_H = 1200, 600
 GROUND_Y = 500
@@ -37,6 +39,7 @@ enemy_sheet = Spritesheet("assets/images/characters.gif")
 def build_world_for_level(level_idx):
     bricks, enemies, spikes = (pygame.sprite.Group() for _ in range(3))
     plantes_group = pygame.sprite.Group()  # Groupe plantes Piranha
+    moving_platforms = pygame.sprite.Group()
 
     if level_idx == 0:
         bricks.add(
@@ -53,7 +56,23 @@ def build_world_for_level(level_idx):
             Spike(1050, GROUND_Y, enemy_sheet),
             Spike(200, GROUND_Y, enemy_sheet),
         )
+    elif level_idx == 2:
+            # Rampe mobile 1
+        moving_platforms.add(MovingPlatform(300, 420, tiles_sheet, 300, 600))  # Position ajustée au-dessus de la lave
 
+        # Rampe mobile 2
+        moving_platforms.add(MovingPlatform(650, 380, tiles_sheet, 650,1000))
+
+        # Rampe mobile 3
+        moving_platforms.add(MovingPlatform(1000, 340, tiles_sheet, 1000, 1400))
+
+        # Spikes invisibles pour représenter la lave en-dessous
+        for x in range(300, 1400, 50):  # Ajuste selon la largeur de la zone
+            spike = Spike(x, GROUND_Y, enemy_sheet)
+            spike.image.set_alpha(0)  # invisible
+            spikes.add(spike)
+
+        
     elif level_idx == 1:
         bricks.add(
             Brick(300, 250, tiles_sheet, True, "coin"),
@@ -105,7 +124,8 @@ def build_world_for_level(level_idx):
             plante = PiranhaPlant(x + 25, y - plante_height, enemy_sheet)
             plantes_group.add(plante)
 
-    return bricks, enemies, spikes, plantes_group
+    return bricks, enemies, spikes, plantes_group, moving_platforms
+
 
 
 
@@ -136,7 +156,7 @@ def run_game():
 
     # Initialisation du niveau
     level = Level(level_files[current_level_id], "tiles.png")
-    bricks, enemies, spikes, plantes_group = build_world_for_level(current_level_id)
+    bricks, enemies, spikes, plantes_group, moving_platforms = build_world_for_level(current_level_id)
     collectibles = pygame.sprite.Group()
 
     spawn_x = 100
@@ -162,14 +182,21 @@ def run_game():
         if countdown_left(level_enter_ms) > 0:
             enemies.update()
             plantes_group.update()
+            moving_platforms.update()  # Mise à jour rampes mobiles
 
             cam_x = max(0, player.rect.centerx - SCREEN_W // 2)
             cam_x = min(cam_x, level.width - SCREEN_W)
 
-            screen.fill((135, 206, 235))  # ciel bleu
+            if current_level_id == 2:
+                screen.fill((20, 20, 40))
+            else:
+                screen.fill((135, 206, 235))
+
             level.draw(screen, cam_x)
             for group in (bricks, enemies, spikes, collectibles, plantes_group):
                 group.draw(screen)
+            moving_platforms.draw(screen)  # Affichage rampes
+
             screen.blit(player.image, (player.rect.x - cam_x, player.rect.y))
 
             sec = countdown_left(game_start_ms) // 1000 + 1
@@ -180,12 +207,28 @@ def run_game():
             continue
 
         # Mise à jour
-        plats = level.get_platforms()
+        plats = list(level.get_platforms()) + list(moving_platforms)  # Ajout des rampes comme plateformes
         player.update(plats)
+
+        # 👇 Ajoute ce juste après
+        player_on_moving_platform = None
+        for plat in moving_platforms:
+            if pygame.sprite.collide_rect(player, plat):
+                if abs(player.rect.bottom - plat.rect.top) <= 5 and player.vel_y >= 0:
+                    player_on_moving_platform = plat
+                    break
+
+        if player_on_moving_platform:
+            # Mario suit exactement le déplacement horizontal de la rampe
+            delta_x = player_on_moving_platform.rect.x - player_on_moving_platform.prev_x
+            player.rect.x += delta_x
+
+
         for group in (bricks, enemies, spikes, collectibles, plantes_group):
             group.update()
+        moving_platforms.update()  # Rampes
 
-        # Collision enemies
+        # Collision briques
         for e in enemies:
             if pygame.sprite.collide_rect(player, e) and e.alive:
                 if player.vel_y > 0 and player.rect.bottom <= e.rect.top + 10:
@@ -205,7 +248,7 @@ def run_game():
                         return "menu"
                     break
 
-        # --- Collisions pics/plantes ---
+        # Collisions pics/plantes
         for group in (spikes, plantes_group):
             if pygame.sprite.spritecollide(player, group, False):
                 if hit_sound:
@@ -218,7 +261,7 @@ def run_game():
                     return "menu"
                 break
 
-        # --- Briques & Collectibles ---
+        # Briques
         for b in bricks:
             if b.rect.colliderect(player.rect) and player.is_jumping_up:
                 item = b.break_brick()
@@ -233,7 +276,6 @@ def run_game():
                     if coin_sound:
                         coin_sound.play()
 
-
         # Passage de niveau
         for p in plats:
             if getattr(p, "type", None) == "flag" and player.rect.colliderect(p.rect):
@@ -243,9 +285,9 @@ def run_game():
                         game_over_sound.play()
                     show_game_over()
                     return "menu"
-                    
+
                 level = Level(level_files[current_level_id], "tiles.png")
-                bricks, enemies, spikes, plantes_group = build_world_for_level(current_level_id)
+                bricks, enemies, spikes, plantes_group, moving_platforms = build_world_for_level(current_level_id)
                 collectibles.empty()
                 spawn_x = 100
                 player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
@@ -253,7 +295,7 @@ def run_game():
                 break
 
         # Calcul du temps écoulé en minutes:secondes, sans le compte à rebours
-        elapsed_ms = max(0, pygame.time.get_ticks() - (game_start_ms + COUNTDOWN_MS))
+        elapsed_ms = max(0, pygame.time.get_ticks() - (level_start_ms + COUNTDOWN_MS))
         elapsed_sec = elapsed_ms // 1000
         minutes = elapsed_sec // 60
         seconds = elapsed_sec % 60
@@ -263,11 +305,18 @@ def run_game():
         cam_x = min(cam_x, level.width - SCREEN_W)
 
         # Affichage
-        screen.fill((135, 206, 235))
+        if current_level_id == 2:
+            screen.fill((20, 20, 40))
+        else:
+            screen.fill((135, 206, 235))
+
         level.draw(screen, cam_x)
         for group in (bricks, enemies, spikes, collectibles, plantes_group):
             for s in group:
                 screen.blit(s.image, (s.rect.x - cam_x, s.rect.y))
+        for plat in moving_platforms:
+            screen.blit(plat.image, (plat.rect.x - cam_x, plat.rect.y))
+
         screen.blit(player.image, (player.rect.x - cam_x, player.rect.y))
 
         # HUD
@@ -278,6 +327,7 @@ def run_game():
         screen.blit(font.render(f"Temps : {minutes:02}:{seconds:02}", True, (0, 0, 0)), (10, 130))
 
         pygame.display.flip()
+
 
 while True:
     menu(screen)

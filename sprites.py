@@ -73,3 +73,20 @@ class Star(pygame.sprite.Sprite):
         self.timer -= 1
         if self.timer <= 0:
             self.kill()
+
+class MovingPlatform(pygame.sprite.Sprite):
+    def __init__(self, x, y, spritesheet, x_min, x_max, speed=2):
+        super().__init__()
+        self.image = spritesheet.get_image(352, 3, 17, 5)  # Coordonnées dans le spritesheet
+        self.image = pygame.transform.scale(self.image, (50, 20))  # Taille jouable
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.x_min = x_min
+        self.x_max = x_max
+        self.speed = speed
+        self.prev_x = self.rect.x  # Initialisation
+
+    def update(self):
+        self.prev_x = self.rect.x  # Sauvegarde la position avant mouvement
+        self.rect.x += self.speed
+        if self.rect.x <= self.x_min or self.rect.x >= self.x_max:
+            self.speed *= -1
