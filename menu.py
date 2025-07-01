@@ -1,5 +1,6 @@
 import pygame
 import sys
+from sprites import Spritesheet
 
 SCREEN_W, SCREEN_H = 1200, 600
 clock = pygame.time.Clock()
@@ -16,8 +17,15 @@ def menu(screen):
     mario_img = pygame.image.load("assets/images/mario.png").convert_alpha()
     mario_img = pygame.transform.scale(mario_img, (150, 200))
 
+    # Charger l'image du curseur 
+    
+    index_img = pygame.transform.scale(Spritesheet("assets/images/tiles.png").get_image(228, 24, 8, 8), (30, 30))
+
     font = pygame.font.SysFont("Arial", 48)
     font_small = pygame.font.SysFont("Arial", 36)
+
+    options = ["Démarrer", "Quitter"]
+    selected_index = 0
 
     def draw_menu():
         screen.fill((135, 206, 235))  # Fond bleu ciel
@@ -31,11 +39,15 @@ def menu(screen):
         screen.blit(title, (SCREEN_W // 2 - title.get_width() // 2, 50))
 
         # Options du menu
-        start_text = font_small.render("1. Démarrer", True, (0, 0, 0))
-        quit_text = font_small.render("2. Quitter", True, (0, 0, 0))
+        for i, text in enumerate(options):
+            rendered = font_small.render(f"{text}", True, (0, 0, 0))
+            text_x = SCREEN_W // 2 - rendered.get_width() // 2
+            text_y = SCREEN_H // 2 + i * 50
+            screen.blit(rendered, (text_x, text_y))
+            if i == selected_index:
+                screen.blit(index_img, (text_x - 40, text_y + 5))
 
-        screen.blit(start_text, (SCREEN_W // 2 - start_text.get_width() // 2, SCREEN_H // 2))
-        screen.blit(quit_text, (SCREEN_W // 2 - quit_text.get_width() // 2, SCREEN_H // 2 + 50))
+
 
     pygame.key.set_repeat(300, 100)
 
@@ -47,13 +59,17 @@ def menu(screen):
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:  # Démarrer le jeu
+                if event.key == pygame.K_DOWN:  # fleche du bas
+                    selected_index = (selected_index + 1) % len(options)
+                elif event.key == pygame.K_UP:  # fleche du haut 
+                    selected_index = (selected_index + 1) % len(options)
+                elif event.key == pygame.K_RETURN:     # entree
                     pygame.mixer.music.stop()
-                    return  # Sort de la fonction menu pour lancer le jeu
-                elif event.key == pygame.K_2:  # Quitter
-                    pygame.mixer.music.stop()
-                    pygame.quit()
-                    sys.exit()
+                    if selected_index == 0:
+                        return  # Démarrer
+                    elif selected_index == 1:
+                        pygame.quit()
+                        sys.exit()
 
         draw_menu()
         pygame.display.flip()
