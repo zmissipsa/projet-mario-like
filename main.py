@@ -2,10 +2,12 @@ import pygame
 from player import Player
 from level import Level
 from sprites import Brick, Coin, Star, Spritesheet
-from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba
+from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba, Bowser
 from menu import menu
 from sprites import MovingPlatform
 import sys
+from fire import Fire
+
 
 # Constantes
 SCREEN_W, SCREEN_H = 1200, 600
@@ -44,6 +46,9 @@ def build_world_for_level(level_idx):
     bricks, enemies, spikes = (pygame.sprite.Group() for _ in range(3))
     plantes_group = pygame.sprite.Group()  # Groupe plantes Piranha
     moving_platforms = pygame.sprite.Group()
+    all_sprites = pygame.sprite.Group()
+    projectiles = pygame.sprite.Group()
+
 
     if level_idx == 0:
         bricks.add(
@@ -79,6 +84,9 @@ def build_world_for_level(level_idx):
             spike = Spike(x, GROUND_Y, enemy_sheet)
             spike.image.set_alpha(0)  # invisible
             spikes.add(spike)
+
+        bowser = Bowser(100, GROUND_Y - 45, enemy_sheet, all_sprites, projectiles)
+        all_sprites.add(bowser)
 
     elif level_idx == 1:
         bricks.add(
@@ -258,6 +266,8 @@ def run_game():
         if countdown_left(level_enter_ms) > 0:
             enemies.update()
             plantes_group.update()
+            all_sprites.update()      # update Bowser et flammes
+            projectiles.update()
 
             cam_x = max(0, player.rect.centerx - SCREEN_W // 2)
             cam_x = min(cam_x, level.width - SCREEN_W)
