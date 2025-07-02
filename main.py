@@ -257,7 +257,7 @@ def pause_menu(screen):
 def run_game():
     # Chargement des niveaux
     level_files = ["niveau1.txt", "niveau2.txt", "niveau3.txt"]
-    current_level_id = 0
+    current_level_id = 2
 
     # Initialisation du niveau
     level = Level(level_files[current_level_id], "tiles.png")
@@ -366,18 +366,19 @@ def run_game():
         for e in enemies:
             if pygame.sprite.collide_rect(player, e) and getattr(e, "alive", True):
                 if player.vel_y > 0 and player.rect.bottom - e.rect.top < 20:
-                    if hasattr(e, 'crush'):
-                        if isinstance(e, BigBowser):
-                            now = pygame.time.get_ticks()
-                            if now - player.last_bowser_hit >= 1000:
-                                e.crush()
-                                player.last_bowser_hit = now
-                                print(f"Bowser a maintenant {e.health} vies restantes")
-                        else:
-                            e.crush()  # Pour tous les autres ennemis avec animation
+                    if isinstance(e, BigBowser):
+                        now = pygame.time.get_ticks()
+                        if now - player.last_bowser_hit >= 1000:
+                            e.crush()
+                            player.last_bowser_hit = now
+                            print(f"Bowser a maintenant {e.health} vies restantes")
+                    elif hasattr(e, 'crush'):
+                        e.crush()
                     else:
-                        e.kill()  # Si pas de méthode crush, on kill direct (rare)
+                        e.kill()
                     player.vel_y = -10
+
+
 
                 else:
                     if hit_sound:
@@ -422,6 +423,13 @@ def run_game():
         # Passage de niveau
         for p in plats:
             if getattr(p, "type", None) == "flag" and player.rect.colliderect(p.rect):
+                # Si on est au niveau 2, on vérifie que Bowser est mort
+                if current_level_id == 2:
+                    bowser_alive = any(isinstance(e, BigBowser) and e.alive for e in enemies)
+                    if bowser_alive:
+                        print("[INFO] Tu dois vaincre Bowser avant de finir le niveau !")
+                        continue  # Ne passe pas le niveau
+                # Sinon ou si Bowser est mort, on continue normalement
                 current_level_id += 1
                 if current_level_id >= len(level_files):
                     if win_sound:
@@ -429,22 +437,19 @@ def run_game():
                     show_you_win()
                     return "menu"
                 else:
-                    summary_start = pygame.time.get_ticks()     #temps avant la page de fin de niveau
+                    summary_start = pygame.time.get_ticks()
                     level_screen(current_level_id, screen, score, pygame.time.get_ticks() - game_start_ms)
-                    summary_end = pygame.time.get_ticks()     #temps apres la page de fin de niveau
-                    
-                    #mise a jour du temps
+                    summary_end = pygame.time.get_ticks()
                     game_start_ms += summary_end - summary_start
 
                     level = Level(level_files[current_level_id], "tiles.png")
                     bricks, enemies, spikes, plantes_group, moving_platforms, all_sprites = build_world_for_level(current_level_id)
-
                     collectibles.empty()
                     spawn_x = 100
                     player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
                     level_enter_ms = pygame.time.get_ticks()
-                    player.lives += 1
                     break
+
 
         # Calcul du temps écoulé en minutes:secondes, sans le compte à rebours
         elapsed_ms = max(0, pygame.time.get_ticks() - (game_start_ms + COUNTDOWN_MS))
