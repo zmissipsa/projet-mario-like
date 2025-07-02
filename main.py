@@ -2,7 +2,7 @@ import pygame
 from player import Player
 from level import Level
 from sprites import Brick, Coin, Star, Spritesheet
-from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba, FlyingGhost, FallingEnemy
+from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba, FlyingGhost, FallingEnemy, BigBowser
 from menu import menu
 from sprites import MovingPlatform
 import sys
@@ -99,6 +99,10 @@ def build_world_for_level(level_idx):
             ghost = FlyingGhost(x, 450, enemy_sheet, enemies, all_sprites)
             enemies.add(ghost)
             all_sprites.add(ghost)
+
+        bowser = BigBowser(3600, 500, enemy_sheet)
+        enemies.add(bowser)
+        all_sprites.add(bowser)
 
 
 
@@ -362,13 +366,19 @@ def run_game():
         for e in enemies:
             if pygame.sprite.collide_rect(player, e) and getattr(e, "alive", True):
                 if player.vel_y > 0 and player.rect.bottom - e.rect.top < 20:
-                    if isinstance(e, (BlueGoomba, Enemy, FallingEnemy, FlyingGhost)):
-                        e.crush()
-                        if hasattr(e, 'crush'):
-                            e.crush()
+                    if hasattr(e, 'crush'):
+                        if isinstance(e, BigBowser):
+                            now = pygame.time.get_ticks()
+                            if now - player.last_bowser_hit >= 1000:
+                                e.crush()
+                                player.last_bowser_hit = now
+                                print(f"Bowser a maintenant {e.health} vies restantes")
                         else:
-                            e.kill()
+                            e.crush()  # Pour tous les autres ennemis avec animation
+                    else:
+                        e.kill()  # Si pas de méthode crush, on kill direct (rare)
                     player.vel_y = -10
+
                 else:
                     if hit_sound:
                         hit_sound.play()

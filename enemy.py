@@ -358,3 +358,50 @@ class FallingEnemy(pygame.sprite.Sprite):
             self.alive = False
             self.timer = pygame.time.get_ticks()
 
+class BigBowser(pygame.sprite.Sprite):
+    def __init__(self, x, y, spritesheet):
+        super().__init__()
+        self.sheet = spritesheet
+        self.health = 3
+        self.direction = 1
+        self.speed = 1
+        self.left_bound = 3450
+        self.right_bound = 4450
+        self.alive = True
+        self.last_hit_time = 0
+        self.invulnerable_duration = 1000  # 1 seconde d'invincibilité après un coup
+
+        # Sprites réduits
+        self.image_right = pygame.transform.scale(
+            spritesheet.get_image(358, 367, 38, 34), (250, 220)
+        )
+        self.image_left = pygame.transform.scale(
+            spritesheet.get_image(115, 367, 38, 34), (250, 220)
+        )
+        self.image = self.image_right
+        self.rect = self.image.get_rect(midbottom=(x, y))
+
+    def update(self):
+        if not self.alive:
+            return
+
+        self.rect.x += self.direction * self.speed
+        if self.rect.left <= self.left_bound:
+            self.rect.left = self.left_bound
+            self.direction = 1
+        elif self.rect.right >= self.right_bound:
+            self.rect.right = self.right_bound
+            self.direction = -1
+
+        self.image = self.image_right if self.direction == 1 else self.image_left
+
+    def crush(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_hit_time < self.invulnerable_duration:
+            return  # encore invulnérable
+        self.last_hit_time = now
+        self.health -= 1
+        print(f"[DEBUG] Bowser touché ! Vies restantes : {self.health}")
+        if self.health <= 0:
+            self.alive = False
+            self.kill()

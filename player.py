@@ -73,6 +73,9 @@ class Player(pygame.sprite.Sprite):
         #ajout de vies pour le joueur
         self.lives = 5
         self.start_position = (x,y)
+        
+        self.last_bowser_hit = 0
+
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
