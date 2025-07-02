@@ -65,7 +65,7 @@ def build_world_for_level(level_idx):
             Brick(350, 200, tiles_sheet, True, "coin"),
             Brick(500, 250, tiles_sheet, True, "star"),
             Brick(700, 250, tiles_sheet, True, "coin"),
-            Brick(1100, 50, tiles_sheet, True, "star"),
+            Brick(1100, 200, tiles_sheet, True, "star"),
             Brick(3325, 50, tiles_sheet, True, "coin"),
         )
 
@@ -399,6 +399,7 @@ def run_game():
                     spawn_x = 100
                     player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
                     level_enter_ms = pygame.time.get_ticks()
+                    player.lives += 1
                     break
 
         # Calcul du temps écoulé en minutes:secondes, sans le compte à rebours
