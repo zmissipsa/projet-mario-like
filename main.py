@@ -448,6 +448,7 @@ def run_game():
                     spawn_x = 100
                     player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
                     level_enter_ms = pygame.time.get_ticks()
+                    player.lives += 1
                     break
 
 
