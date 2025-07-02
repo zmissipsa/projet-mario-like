@@ -11,7 +11,15 @@ class Platform(pygame.sprite.Sprite):
 
 class Level:
     """
-    offset_x : décalage horizontal appliqué à tous les blocs / ennemis.
+    Classe Level : - Gère le chargement et l'affichage d'un niveau.
+    - Lit un fichier texte décrivant les plateformes, ennemis et obstacles.
+    - Instancie les objets et les stocke dans des groupes Pygame.
+    - Méthodes principales :
+        load_level() : charge les objets du niveau à partir du fichier.
+        draw(surface, cam_x) : dessine les plateformes visibles à l'écran.
+        get_platforms() : retourne le groupe des plateformes solides.
+        get_enemies() : retourne le groupe des ennemis.
+        get_spikes() : retourne le groupe des pics.
     """
     def __init__(self, tile_map_txt, tile_sheet_png, offset_x=0):
         self.platforms = pygame.sprite.Group()
