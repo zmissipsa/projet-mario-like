@@ -11,7 +11,7 @@ import sys
 SCREEN_W, SCREEN_H = 1200, 600
 GROUND_Y = 500
 
-COUNTDOWN_MS = 3000 # 10 secondes avant démarrage du jeu
+COUNTDOWN_MS = 3000 # 3 secondes avant démarrage du jeu
 
 # Initialiser sons du jeu
 try:
@@ -188,6 +188,28 @@ def level_screen(lvl_id, screen, score, time_ms):         #ecran de fin de nivea
         pygame.display.flip()
         clock.tick(60)
 
+# Menu pause
+def pause_menu(screen):
+    font_title = pygame.font.SysFont("Arial", 64)
+    font_small = pygame.font.SysFont("Arial", 36)
+
+    while True:
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if ev.type == pygame.KEYDOWN:
+                if ev.key == pygame.K_RETURN:
+                    return  # revenir au jeu
+                
+        screen.fill((135, 206, 235))  # Fond bleu ciel
+        title = font_title.render(f"Pause", True, (255, 255, 225))
+        hint_text = font_small.render("Appuie sur Entrée pour continuer", True, (0, 0, 0))
+
+        screen.blit(title, title.get_rect(center=(SCREEN_W // 2, 150)))
+        screen.blit(hint_text, hint_text.get_rect(center=(SCREEN_W // 2, 400)))
+        
+        pygame.display.flip()
 
 def run_game():
     # Chargement des niveaux
@@ -218,6 +240,16 @@ def run_game():
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 return "quit"
+            
+            # Menu Pause
+            if ev.type == pygame.KEYDOWN:                    
+                if ev.key == pygame.K_p:
+                    summary_start = pygame.time.get_ticks()     #temps avant pause
+                    pause_menu(screen)
+                    summary_end = pygame.time.get_ticks()     #temps apres pause
+                    
+                    #mise a jour du temps
+                    game_start_ms += summary_end - summary_start
 
         if countdown_left(level_enter_ms) > 0:
             enemies.update()
