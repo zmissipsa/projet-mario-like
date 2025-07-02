@@ -74,9 +74,10 @@ def build_world_for_level(level_idx):
 
         tuyaux = [
             (3300, 200)
+            (4550, 200)
         ]
 
-        tuyaux_plantes_indices = [0]
+        tuyaux_plantes_indices = [0,1]
 
         plante_height = 38  
 
@@ -252,7 +253,7 @@ def pause_menu(screen):
 def run_game():
     # Chargement des niveaux
     level_files = ["niveau1.txt", "niveau2.txt", "niveau3.txt"]
-    current_level_id = 0
+    current_level_id = 2
 
     # Initialisation du niveau
     level = Level(level_files[current_level_id], "tiles.png")
