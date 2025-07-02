@@ -61,6 +61,28 @@ def build_world_for_level(level_idx):
             Spike(200, GROUND_Y, enemy_sheet),
         )
     elif level_idx == 2:
+        bricks.add(
+            Brick(350, 200, tiles_sheet, True, "coin"),
+            Brick(500, 250, tiles_sheet, True, "star"),
+            Brick(700, 250, tiles_sheet, True, "coin"),
+            Brick(1100, 50, tiles_sheet, True, "star"),
+            Brick(3325, 50, tiles_sheet, True, "coin"),
+        )
+
+        tuyaux = [
+            (3300, 200)
+        ]
+
+        tuyaux_plantes_indices = [0]
+
+        plante_height = 38  
+
+        for i in tuyaux_plantes_indices:
+            x, y = tuyaux[i]
+            plante = PiranhaPlant(x + 25, y - plante_height, enemy_sheet)
+            plantes_group.add(plante)
+
+
             # Rampe mobile 1
         moving_platforms.add(MovingPlatform(300, 420, tiles_sheet, 300, 600))  # Position ajustée au-dessus de la lave
 
