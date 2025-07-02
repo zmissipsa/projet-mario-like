@@ -71,7 +71,7 @@ class Player(pygame.sprite.Sprite):
         self.direction = "right"
 
         #ajout de vies pour le joueur
-        self.lives = 10
+        self.lives = 5
         self.start_position = (x,y)
         
         self.last_bowser_hit = 0

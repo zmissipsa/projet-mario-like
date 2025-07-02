@@ -373,10 +373,10 @@ class BigBowser(pygame.sprite.Sprite):
 
         # Sprites réduits
         self.image_right = pygame.transform.scale(
-            spritesheet.get_image(358, 367, 38, 34), (250, 220)
+            spritesheet.get_image(256, 368, 32, 34), (250, 220)
         )
         self.image_left = pygame.transform.scale(
-            spritesheet.get_image(115, 367, 38, 34), (250, 220)
+            spritesheet.get_image(222, 367, 32, 34), (250, 220)
         )
         self.image = self.image_right
         self.rect = self.image.get_rect(midbottom=(x, y))
