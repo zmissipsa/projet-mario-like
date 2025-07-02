@@ -17,6 +17,8 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
 
+        self.attached_platform = None  # Plateforme mobile sur laquelle Mario est posé
+
         # Pour commencer, un simple carré rouge
         spritesheet = Spritesheet("./assets/images/characters.gif")
         
@@ -84,6 +86,10 @@ class Player(pygame.sprite.Sprite):
             self.vel_y = self.terminal_velocity
 
     def update(self, platforms):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT] or keys[pygame.K_SPACE]:
+            self.attached_platform = None  # Il se détache si on appuie sur une touche
+
         self.handle_input()
         self.apply_gravity()
 
@@ -137,6 +143,9 @@ class Player(pygame.sprite.Sprite):
                         self.rect.bottom = plateform.rect.top
                         self.vel_y = 0
                         self.on_ground = True
+                        if hasattr(plateform, "is_moving") and plateform.is_moving:
+                            self.attached_platform = plateform
+
                     elif self.vel_y < 0 : #saut
                         self.rect.top = plateform.rect.bottom
                         self.vel_y = 0

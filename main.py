@@ -75,6 +75,10 @@ def build_world_for_level(level_idx):
             spike = Spike(x, GROUND_Y, enemy_sheet)
             spike.image.set_alpha(0)  # invisible
             spikes.add(spike)
+        for x in range(2300, 2700, 50):  # Ajuste selon la largeur de la zone
+            spike = Spike(x, GROUND_Y, enemy_sheet)
+            spike.image.set_alpha(0)  # invisible
+            spikes.add(spike)
 
     elif level_idx == 1:
         bricks.add(
@@ -254,7 +258,6 @@ def run_game():
         if countdown_left(level_enter_ms) > 0:
             enemies.update()
             plantes_group.update()
-            moving_platforms.update()  # Mise à jour rampes mobiles
 
             cam_x = max(0, player.rect.centerx - SCREEN_W // 2)
             cam_x = min(cam_x, level.width - SCREEN_W)
@@ -277,28 +280,33 @@ def run_game():
 
             pygame.display.flip()
             continue
-
-        # Mise à jour
-        plats = list(level.get_platforms()) + list(moving_platforms)  # Ajout des rampes comme plateformes
+        
+        plats = list(level.get_platforms()) + list(moving_platforms)
         player.update(plats)
+        
+        # 1. Met à jour toutes les rampes mobiles
+        for plat in moving_platforms:
+            plat.update()
 
-        # 👇 Ajoute ce juste après
-        player_on_moving_platform = None
+        # Si Mario est sur une plateforme mobile, il doit suivre son mouvement
+        if player.attached_platform:
+            delta_x = player.attached_platform.rect.x - player.attached_platform.prev_x
+            player.rect.x += delta_x
+
+
+        # 3. Collision avec les rampes pour s’y attacher
+        player.attached_platform = None
         for plat in moving_platforms:
             if pygame.sprite.collide_rect(player, plat):
-                if abs(player.rect.bottom - plat.rect.top) <= 5 and player.vel_y >= 0:
-                    player_on_moving_platform = plat
-                    break
-
-        if player_on_moving_platform:
-            # Mario suit exactement le déplacement horizontal de la rampe
-            delta_x = player_on_moving_platform.rect.x - player_on_moving_platform.prev_x
-            player.rect.x += delta_x
+                if abs(player.rect.bottom - plat.rect.top) <= 6 and player.vel_y >= 0:
+                    player.rect.bottom = plat.rect.top
+                    player.vel_y = 0
+                    player.attached_platform = plat
+                    break  # une seule rampe à la fois
 
 
         for group in (bricks, enemies, spikes, collectibles, plantes_group):
             group.update()
-        moving_platforms.update()  # Rampes
 
         # Collision enemies
         for e in enemies:
