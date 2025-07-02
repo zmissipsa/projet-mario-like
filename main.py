@@ -46,6 +46,7 @@ def build_world_for_level(level_idx):
     bricks, enemies, spikes = (pygame.sprite.Group() for _ in range(3))
     plantes_group = pygame.sprite.Group()  # Groupe plantes Piranha
     moving_platforms = pygame.sprite.Group()
+    all_sprites = pygame.sprite.Group()
 
     if level_idx == 0:
         bricks.add(

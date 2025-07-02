@@ -3,7 +3,7 @@
 import pygame
 import random
 from sprites import Spritesheet
-
+import math
 # Ennemi mobile
 class Enemy(pygame.sprite.Sprite):
     """
@@ -218,3 +218,143 @@ class BlueGoomba(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.alive = False
             self.timer = pygame.time.get_ticks()
+            
+class FlyingGhost(pygame.sprite.Sprite):
+    def __init__(self, x, y, spritesheet, enemy_group, all_sprites):
+        super().__init__()
+        self.sheet = spritesheet  
+        self.direction = 1
+        self.speed = 1
+        self.left_bound = 1400
+        self.right_bound = 2300
+        self.base_y = y - 50  # ← fantôme 50px plus haut
+        self.angle = 0
+        self.alive = True
+        self.timer = None
+
+        # Apparence du fantôme
+        self.image_right = pygame.transform.scale(
+            self.sheet.get_image(238, 259, 19, 26),
+            (45, 45)
+        )
+        self.image = self.image_right
+        self.rect = self.image.get_rect(midbottom=(x, self.base_y))
+
+        # Groupes
+        self.enemy_group = enemy_group
+        self.all_sprites = all_sprites
+        self.last_attack_time = pygame.time.get_ticks() + random.randint(0, 2000)
+
+    def update(self):
+        if not self.alive:
+            if self.timer and pygame.time.get_ticks() - self.timer > 500:
+                self.kill()
+            return
+
+        # Déplacement horizontal
+        self.rect.x += self.direction * self.speed
+        if self.rect.left <= self.left_bound:
+            self.rect.left = self.left_bound
+            self.direction = 1
+        elif self.rect.right >= self.right_bound:
+            self.rect.right = self.right_bound
+            self.direction = -1
+
+        # Apparence selon direction
+        if self.direction == 1:
+            self.image = self.image_right
+        else:
+            self.image = pygame.transform.flip(self.image_right, True, False)
+
+        # Flottement vertical
+        self.angle += 0.05
+        offset_y = math.sin(self.angle) * 5
+        self.rect.y = self.base_y + offset_y
+
+        # Spawn ennemi toutes les 5 secondes
+        now = pygame.time.get_ticks()
+        if now - self.last_attack_time >= 5000:
+            self.spawn_enemy()
+            self.last_attack_time = now
+
+    def spawn_enemy(self):
+        falling_enemy = FallingEnemy(self.rect.centerx, self.rect.bottom - 30, self.sheet)
+        self.enemy_group.add(falling_enemy)
+        self.all_sprites.add(falling_enemy)
+
+    def crush(self):
+        if self.alive:
+            self.image = pygame.transform.scale(
+                self.sheet.get_image(257, 260, 19, 19),
+                (32, 32)
+            )
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+            self.alive = False
+            self.timer = pygame.time.get_ticks()
+            
+class FallingEnemy(pygame.sprite.Sprite):
+    def __init__(self, x, y, spritesheet):
+        super().__init__()
+        self.sheet = spritesheet
+
+        self.image_right = pygame.transform.scale(
+            self.sheet.get_image(293, 315, 19, 18), (45, 45)
+        )
+        self.image_left = pygame.transform.scale(
+            self.sheet.get_image(180, 313, 18, 19), (45, 45)
+        )
+        self.image = self.image_left
+
+        self.rect = self.image.get_rect(center=(x, y))
+
+        self.vel_y = 5
+        self.vel_x = 2
+        self.spawn_time = pygame.time.get_ticks()
+        self.on_ground = False
+        self.alive = True
+        self.timer = None
+
+    def update(self, platforms):
+        if self.alive:
+            # Gravité
+            if not self.on_ground:
+                self.rect.y += self.vel_y
+                for plat in platforms:
+                    if self.rect.colliderect(plat.rect) and abs(self.rect.bottom - plat.rect.top) <= 10:
+                        self.rect.bottom = plat.rect.top
+                        self.vel_y = 0
+                        self.on_ground = True
+                        break
+            else:
+                # Mouvement horizontal
+                self.rect.x += self.vel_x
+
+                # Bords de la zone
+                if self.rect.left <= 1400 or self.rect.right >= 2300:
+                    self.vel_x *= -1
+
+                # Sol en dessous
+                under_feet = self.rect.move(self.vel_x, 2)
+                if not any(under_feet.colliderect(p.rect) for p in platforms):
+                    self.vel_x *= -1
+
+                # Animation direction
+                if self.vel_x > 0:
+                    self.image = self.image_right
+                else:
+                    self.image = self.image_left
+
+        else:
+            if self.timer and pygame.time.get_ticks() - self.timer > 500:
+                self.kill()
+
+    def crush(self):
+        if self.alive:
+            self.image = pygame.transform.scale(
+                self.sheet.get_image(217, 313, 21, 17),
+                (32, 26)
+            )
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+            self.alive = False
+            self.timer = pygame.time.get_ticks()
+
