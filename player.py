@@ -71,7 +71,7 @@ class Player(pygame.sprite.Sprite):
         self.direction = "right"
 
         #ajout de vies pour le joueur
-        self.lives = 3
+        self.lives = 5
         self.start_position = (x,y)
 
     def handle_input(self):

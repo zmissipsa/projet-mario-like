@@ -273,7 +273,7 @@ class FlyingGhost(pygame.sprite.Sprite):
 
         # Spawn ennemi toutes les 5 secondes
         now = pygame.time.get_ticks()
-        if now - self.last_attack_time >= 5000:
+        if now - self.last_attack_time >= 15000:
             self.spawn_enemy()
             self.last_attack_time = now
 
