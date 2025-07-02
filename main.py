@@ -2,7 +2,7 @@ import pygame
 from player import Player
 from level import Level
 from sprites import Brick, Coin, Star, Spritesheet
-from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba
+from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba, FlyingGhost, FallingEnemy
 from menu import menu
 from sprites import MovingPlatform
 import sys
@@ -46,9 +46,6 @@ def build_world_for_level(level_idx):
     bricks, enemies, spikes = (pygame.sprite.Group() for _ in range(3))
     plantes_group = pygame.sprite.Group()  # Groupe plantes Piranha
     moving_platforms = pygame.sprite.Group()
-    all_sprites = pygame.sprite.Group()
-    projectiles = pygame.sprite.Group()
-
 
     if level_idx == 0:
         bricks.add(
@@ -74,13 +71,21 @@ def build_world_for_level(level_idx):
 
         # Rampe mobile 3
         moving_platforms.add(MovingPlatform(1000, 340, tiles_sheet, 1000, 1400))
+        
+        # === Fantômes volants ===
+        for x in [1600, 2000]:  # ou même juste un seul
+            ghost = FlyingGhost(x, 450, enemy_sheet, enemies, all_sprites)
+            enemies.add(ghost)
+            all_sprites.add(ghost)
+
+
 
         # Spikes invisibles pour représenter la lave en-dessous
-        for x in range(300, 1400, 50):  # Ajuste selon la largeur de la zone
+        for x in range(300, 1400, 50): 
             spike = Spike(x, GROUND_Y, enemy_sheet)
             spike.image.set_alpha(0)  # invisible
             spikes.add(spike)
-        for x in range(2300, 2700, 50):  # Ajuste selon la largeur de la zone
+        for x in range(2300, 2700, 50): 
             spike = Spike(x, GROUND_Y, enemy_sheet)
             spike.image.set_alpha(0)  # invisible
             spikes.add(spike)
@@ -101,7 +106,7 @@ def build_world_for_level(level_idx):
         enemy_positions = [
             (2000, GROUND_Y, 400, 700),
             (1500, GROUND_Y, 700, 1000),
-            (1100, GROUND_Y, 1000, 1250),  # celui qu’on veut ignorer
+            (1100, GROUND_Y, 1000, 1250),  
             (1800, GROUND_Y, 1300, 1500),
         ]
 
@@ -138,7 +143,8 @@ def build_world_for_level(level_idx):
             plante = PiranhaPlant(x + 25, y - plante_height, enemy_sheet)
             plantes_group.add(plante)
 
-    return bricks, enemies, spikes, plantes_group, moving_platforms
+    return bricks, enemies, spikes, plantes_group, moving_platforms, all_sprites
+
 
 
 
@@ -229,7 +235,7 @@ def run_game():
 
     # Initialisation du niveau
     level = Level(level_files[current_level_id], "tiles.png")
-    bricks, enemies, spikes, plantes_group, moving_platforms = build_world_for_level(current_level_id)
+    bricks, enemies, spikes, plantes_group, moving_platforms, all_sprites = build_world_for_level(current_level_id)
     collectibles = pygame.sprite.Group()
 
     spawn_x = 100
@@ -247,6 +253,12 @@ def run_game():
     running = True
     while running:
         dt = clock.tick(60)  # Limite à 60 FPS
+        plats = list(level.get_platforms()) + list(moving_platforms)
+        for s in all_sprites:
+            if isinstance(s, FallingEnemy):
+                s.update(plats)
+            else:
+                s.update()
 
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
@@ -313,15 +325,27 @@ def run_game():
                     break  # une seule rampe à la fois
 
 
-        for group in (bricks, enemies, spikes, collectibles, plantes_group):
+        for group in (bricks, spikes, collectibles, plantes_group):
             group.update()
+
+        for e in enemies:
+            if isinstance(e, FallingEnemy):
+                e.update(plats)
+            else:
+                e.update()
+
+
 
         # Collision enemies
         for e in enemies:
-            if pygame.sprite.collide_rect(player, e) and e.alive:
+            if pygame.sprite.collide_rect(player, e) and getattr(e, "alive", True):
                 if player.vel_y > 0 and player.rect.bottom - e.rect.top < 20:
-                    if (isinstance(e, BlueGoomba) or isinstance(e, Enemy)):
+                    if isinstance(e, (BlueGoomba, Enemy, FallingEnemy, FlyingGhost)):
                         e.crush()
+                        if hasattr(e, 'crush'):
+                            e.crush()
+                        else:
+                            e.kill()
                     player.vel_y = -10
                 else:
                     if hit_sound:
@@ -332,7 +356,8 @@ def run_game():
                             game_over_sound.play()
                         show_game_over()
                         return "menu"
-                    break
+                break
+
 
         # Collisions pics/plantes
         for group in (spikes, plantes_group):
@@ -380,7 +405,8 @@ def run_game():
                     game_start_ms += summary_end - summary_start
 
                     level = Level(level_files[current_level_id], "tiles.png")
-                    bricks, enemies, spikes, plantes_group, moving_platforms = build_world_for_level(current_level_id)
+                    bricks, enemies, spikes, plantes_group, moving_platforms, all_sprites = build_world_for_level(current_level_id)
+
                     collectibles.empty()
                     spawn_x = 100
                     player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
@@ -402,6 +428,10 @@ def run_game():
             screen.fill((20, 20, 40))
         else:
             screen.fill((135, 206, 235))
+            
+        for s in all_sprites:
+            screen.blit(s.image, (s.rect.x - cam_x, s.rect.y))
+
 
         level.draw(screen, cam_x)
         for group in (bricks, enemies, spikes, collectibles, plantes_group):

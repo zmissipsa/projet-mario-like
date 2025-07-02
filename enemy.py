@@ -1,8 +1,8 @@
 # enemy.py
 
 import pygame
+import random
 from sprites import Spritesheet
-
 
 # Ennemi mobile
 class Enemy(pygame.sprite.Sprite):
@@ -218,4 +218,3 @@ class BlueGoomba(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.alive = False
             self.timer = pygame.time.get_ticks()
-
