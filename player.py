@@ -14,6 +14,17 @@ except Exception as e:
 
 
 class Player(pygame.sprite.Sprite):
+    """
+    Classe Player : - Gère le personnage contrôlé par le joueur.
+    - Gère les mouvements, la gravité et les collisions avec le décor.
+    - Anime le sprite en fonction de l'état : idle, marche, saut.
+    - Méthodes principales :
+        handle_input() : lit les entrées clavier.
+        apply_gravity() : applique la gravité au joueur.
+        update() : met à jour la position et l'animation.
+        check_collisions() : gère les collisions avec les plateformes.
+        lose_life() : décrémente les vies et réinitialise la position.
+    """
     def __init__(self, x, y):
         super().__init__()
 
