@@ -5,6 +5,14 @@ from sprites import Spritesheet
 
 # Ennemi mobile
 class Enemy(pygame.sprite.Sprite):
+    """
+    Classe Enemy : - Gère un ennemi mobile se déplaçant horizontalement.
+    - Se déplace entre deux bornes définies dans le niveau.
+    - Inverse sa direction lorsqu'il atteint une borne.
+    - Méthodes principales :
+        update() : met à jour la position et l'image selon la direction.
+        crush() : désactive l'ennemi lorsque le joueur saute dessus.
+    """
     def __init__(self, x, y, left_bound, right_bound, spritesheet, speed=2):
         super().__init__()
         
