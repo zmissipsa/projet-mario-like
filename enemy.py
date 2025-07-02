@@ -372,12 +372,7 @@ class BigBowser(pygame.sprite.Sprite):
         self.invulnerable_duration = 1000  # 1 seconde d'invincibilité après un coup
 
         # Sprites réduits
-        self.image_right = pygame.transform.scale(
-            spritesheet.get_image(256, 368, 32, 34), (250, 220)
-        )
-        self.image_left = pygame.transform.scale(
-            spritesheet.get_image(222, 367, 32, 34), (250, 220)
-        )
+        self.image_right = pygame.transform.scale()
         self.image = self.image_right
         self.rect = self.image.get_rect(midbottom=(x, y))
 
