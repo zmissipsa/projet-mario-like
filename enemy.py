@@ -10,7 +10,7 @@ class Enemy(pygame.sprite.Sprite):
         
         # Image originale (direction droite)
         original_image = pygame.transform.scale(
-            spritesheet.get_image(256, 368, 33, 33), (45, 45)
+            spritesheet.get_image(314, 206, 18, 25), (45, 45)
         )
         # Image retournée horizontalement (direction gauche)
         self.image_right = original_image
