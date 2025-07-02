@@ -73,7 +73,7 @@ def build_world_for_level(level_idx):
         )
 
         tuyaux = [
-            (3300, 200)
+            (3300, 200),
             (4550, 200)
         ]
 
