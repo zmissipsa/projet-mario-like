@@ -257,7 +257,7 @@ def pause_menu(screen):
 def run_game():
     # Chargement des niveaux
     level_files = ["niveau1.txt", "niveau2.txt", "niveau3.txt"]
-    current_level_id = 2
+    current_level_id = 0
 
     # Initialisation du niveau
     level = Level(level_files[current_level_id], "tiles.png")
