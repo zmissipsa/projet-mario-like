@@ -2,7 +2,7 @@
 
 import pygame
 from sprites import Spritesheet
-from fire import Fire 
+
 
 # Ennemi mobile
 class Enemy(pygame.sprite.Sprite):
@@ -218,62 +218,4 @@ class BlueGoomba(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.alive = False
             self.timer = pygame.time.get_ticks()
-
-class Bowser(pygame.sprite.Sprite):
-    def __init__(self, x, y, spritesheet, all_sprites_group, projectiles_group):
-        super().__init__()
-        self.sheet = spritesheet
-
-        # Extraire et redimensionner les images (ajuste selon ta spritesheet)
-        self.closed_img = pygame.transform.scale(
-            spritesheet.get_image(289, 365, 38, 37),
-            (45, 45)
-        )
-        self.open_img = pygame.transform.scale(
-            spritesheet.get_image(321, 365, 41, 38),
-            (45, 45)
-        )
-
-        self.image = self.closed_img
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-        self.cooldown = 3000  # délai entre tirs en ms
-        self.last_shot_time = pygame.time.get_ticks()
-
-        self.state = "closed"  # états possibles : "closed", "open"
-        self.animation_duration = 500  # durée bouche ouverte avant de lancer la flamme (ms)
-        self.state_start_time = pygame.time.get_ticks()
-
-        # Groupes pour gérer les sprites
-        self.all_sprites = all_sprites_group
-        self.projectiles = projectiles_group
-
-    def update(self):
-        now = pygame.time.get_ticks()
-
-        if self.state == "closed":
-            # Attendre cooldown avant d'ouvrir la bouche
-            if now - self.last_shot_time > self.cooldown:
-                self.state = "open"
-                self.state_start_time = now
-                self.image = self.open_img
-
-        elif self.state == "open":
-            # Après animation, lancer la flamme puis refermer la bouche
-            if now - self.state_start_time > self.animation_duration:
-                self.lancer_feu()
-                self.last_shot_time = now
-                self.state = "closed"
-                self.image = self.closed_img
-
-    def lancer_feu(self):
-        # Crée une flamme à la sortie de la bouche (à ajuster selon la position)
-        x = self.rect.right + 10  # un peu à droite de Bowser
-        y = self.rect.centery
-        flame = Fire(x, y)
-        self.all_sprites.add(flame)
-        self.projectiles.add(flame)
-
-
-
 

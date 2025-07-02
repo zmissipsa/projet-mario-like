@@ -2,11 +2,11 @@ import pygame
 from player import Player
 from level import Level
 from sprites import Brick, Coin, Star, Spritesheet
-from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba, Bowser
+from enemy import Enemy, Spike, PiranhaPlant, BlueGoomba
 from menu import menu
 from sprites import MovingPlatform
 import sys
-from fire import Fire
+
 
 
 # Constantes
@@ -66,28 +66,6 @@ def build_world_for_level(level_idx):
             Spike(200, GROUND_Y, enemy_sheet),
         )
     elif level_idx == 2:
-        bricks.add(
-            Brick(350, 200, tiles_sheet, True, "coin"),
-            Brick(500, 250, tiles_sheet, True, "star"),
-            Brick(700, 250, tiles_sheet, True, "coin"),
-            Brick(1100, 200, tiles_sheet, True, "star"),
-            Brick(3325, 50, tiles_sheet, True, "coin"),
-        )
-
-        tuyaux = [
-            (3300, 200)
-        ]
-
-        tuyaux_plantes_indices = [0]
-
-        plante_height = 38  
-
-        for i in tuyaux_plantes_indices:
-            x, y = tuyaux[i]
-            plante = PiranhaPlant(x + 25, y - plante_height, enemy_sheet)
-            plantes_group.add(plante)
-
-
             # Rampe mobile 1
         moving_platforms.add(MovingPlatform(300, 420, tiles_sheet, 300, 600))  # Position ajustée au-dessus de la lave
 
@@ -107,8 +85,7 @@ def build_world_for_level(level_idx):
             spike.image.set_alpha(0)  # invisible
             spikes.add(spike)
 
-        bowser = Bowser(100, GROUND_Y - 45, enemy_sheet, all_sprites, projectiles)
-        all_sprites.add(bowser)
+       
 
     elif level_idx == 1:
         bricks.add(
@@ -288,8 +265,7 @@ def run_game():
         if countdown_left(level_enter_ms) > 0:
             enemies.update()
             plantes_group.update()
-            all_sprites.update()      # update Bowser et flammes
-            projectiles.update()
+    
 
             cam_x = max(0, player.rect.centerx - SCREEN_W // 2)
             cam_x = min(cam_x, level.width - SCREEN_W)
@@ -409,7 +385,6 @@ def run_game():
                     spawn_x = 100
                     player.rect.topleft = (spawn_x, find_spawn(level, spawn_x))
                     level_enter_ms = pygame.time.get_ticks()
-                    player.lives += 1
                     break
 
         # Calcul du temps écoulé en minutes:secondes, sans le compte à rebours
